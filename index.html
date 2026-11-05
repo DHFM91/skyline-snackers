@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Skyline Snackers</title>
@@ -10,7 +10,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
 <style>
-  html, body { margin: 0; height: 100%; background: #07070b; overflow: hidden; overscroll-behavior: none; }
+  html, body { margin: 0; height: 100%; background: #07070b; overflow: hidden; overscroll-behavior: none;
+    touch-action: none; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body { display: flex; align-items: center; justify-content: center; }
   body.portrait { align-items: flex-start; padding-top: max(8px, env(safe-area-inset-top)); box-sizing: border-box; }
   canvas { display: block; box-shadow: 0 0 40px #000; outline: none; }
@@ -56,11 +57,11 @@
   </div>
   <button class="tb" id="b-pause" data-act="pause">II</button>
 </div>
-<script src="js/core.js?v=6"></script>
-<script src="js/world.js?v=6"></script>
-<script src="js/monsters.js?v=6"></script>
-<script src="js/leaderboard.js?v=6"></script>
-<script src="js/game.js?v=6"></script>
-<script src="js/touch.js?v=6"></script>
+<script src="js/core.js?v=7"></script>
+<script src="js/world.js?v=7"></script>
+<script src="js/monsters.js?v=7"></script>
+<script src="js/leaderboard.js?v=7"></script>
+<script src="js/game.js?v=7"></script>
+<script src="js/touch.js?v=7"></script>
 </body>
 </html>
