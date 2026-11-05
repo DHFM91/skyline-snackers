@@ -188,7 +188,7 @@ class Building {
     const total = this.floors * this.cols;
     let floorGone = false;
     for (let f = 0; f < this.floors; f++) if (this.cells[f].every(cl => cl.hp <= 0)) { floorGone = true; break; }
-    if (this.destroyed >= Math.ceil(total * 0.48) || floorGone) game.collapseBuilding(this);
+    if (this.destroyed >= Math.ceil(total * 0.3) || floorGone) game.collapseBuilding(this);
   }
   update(dt, game) {
     if (this.shakeT > 0) this.shakeT -= dt;
