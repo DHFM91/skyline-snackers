@@ -16,13 +16,14 @@ addEventListener('resize', resize); resize();
 
 const TITLE = 'SKYLINE SNACKERS';
 const SUBTITLE = 'AN ELDRITCH WORLD TOUR';
+const START_LIVES = 1;   // lives per game (and per continue)
 
 function loadHi() { try { return parseInt(localStorage.getItem('skyline-snackers-hi') || '0', 10) || 0; } catch (e) { return 0; } }
 function saveHi(v) { try { localStorage.setItem('skyline-snackers-hi', String(v)); } catch (e) { /* storage unavailable */ } }
 
 const Game = {
   state: 'title', stateT: 0, t: 0, sel: 0,
-  cityIdx: 0, tour: 1, d: 1, score: 0, hi: loadHi(), lives: 3,
+  cityIdx: 0, tour: 1, d: 1, score: 0, hi: loadHi(), lives: START_LIVES,
   monster: null, buildings: [], walkers: [], tanks: [], helis: [], shots: [],
   far: [], stars: [], shake: 0, staticT: 0, windowStun: 0, levelT: 0, paused: false,
   spawn: {}, bonus: null, helpT: 0,
@@ -32,7 +33,7 @@ const Game = {
 
   /* ---------- flow ---------- */
   newGame() {
-    this.score = 0; this.lives = 3; this.cityIdx = 0; this.tour = 1; this.helpT = 9;
+    this.score = 0; this.lives = START_LIVES; this.cityIdx = 0; this.tour = 1; this.helpT = 9;
     this.startCity();
   },
   startCity() {
@@ -220,7 +221,7 @@ const Game = {
         if (Input.hit('right')) { this.sel = (this.sel + 1) % MONSTERS.length; Sfx.play('select'); }
         if (go && this.stateT > 0.3) {
           Sfx.play('confirm');
-          if (this.continuing) { this.continuing = false; this.score = 0; this.lives = 3; this.startCity(); }
+          if (this.continuing) { this.continuing = false; this.score = 0; this.lives = START_LIVES; this.startCity(); }
           else this.newGame();
         }
         break;
