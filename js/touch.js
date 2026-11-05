@@ -18,6 +18,7 @@ const TouchPad = {
   shown: null, jumpShown: null, pauseShown: null,
 
   init() {
+    this.blockZoom();
     if (IS_TOUCH) this.enable();
     // A real finger on the screen also turns touch mode on (covers laptops with touchscreens).
     addEventListener('pointerdown', e => { if (e.pointerType === 'touch' && !IS_TOUCH) { IS_TOUCH = true; this.enable(); } }, true);
@@ -77,6 +78,31 @@ const TouchPad = {
 
     for (const el of [this.root, canvas]) el.addEventListener('contextmenu', e => e.preventDefault());
     addEventListener('blur', () => this.releaseAll());
+  },
+
+  // iPhone Safari ignores "user-scalable=no", so block pinch and double-tap zoom here,
+  // and snap the page back to 100% if it ever does zoom (e.g. after the keyboard opens).
+  blockZoom() {
+    const stop = e => e.preventDefault();
+    for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, stop, { passive: false });
+    document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+    let lastEnd = 0;
+    document.addEventListener('touchend', e => {
+      const now = Date.now();
+      if (now - lastEnd < 350 && e.target !== this.kbd) e.preventDefault();   // second tap of a double-tap
+      lastEnd = now;
+    }, { passive: false });
+    document.addEventListener('dblclick', stop, { passive: false });
+    document.addEventListener('gestureend', () => this.resetZoom());
+    this.kbd.addEventListener('blur', () => this.resetZoom());
+    addEventListener('orientationchange', () => setTimeout(() => this.resetZoom(), 300));
+  },
+  resetZoom() {
+    const m = document.querySelector('meta[name=viewport]');
+    if (!m) return;
+    const c = m.getAttribute('content');
+    m.setAttribute('content', 'width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover');
+    setTimeout(() => { m.setAttribute('content', c); window.scrollTo(0, 0); resize(); }, 60);
   },
 
   openKeyboard() {
