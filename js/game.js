@@ -415,7 +415,7 @@ const Game = {
     this.text(def.specialName, 186, 59, 8, ready ? '#7dffb0' : '#999', 'left', 2);
     for (let i = 0; i < this.lives; i++) { ctx.fillStyle = '#ff5a7a'; ctx.beginPath(); ctx.arc(284 - i * 12, 24, 4, 0, Math.PI * 2); ctx.fill(); }
     this.text('SCORE ' + String(this.score).padStart(7, '0'), W - 14, 30, 16, '#ffe14d', 'right', 4);
-    this.text('HI ' + String(Math.max(this.hi, this.score)).padStart(7, '0'), W - 14, 50, 11, '#ddd', 'right', 3);
+    this.text('HIGH SCORE ' + String(Math.max(this.hi, this.score)).padStart(7, '0'), W - 14, 50, 11, '#ddd', 'right', 3);
     this.text(this.city.name + (this.tour > 1 ? '  ·  TOUR ' + this.tour : ''), W / 2, 26, 13, '#fff', 'center', 3);
     if (Sfx.muted) this.text('MUTED', W / 2, 44, 9, '#aaa', 'center', 2);
   },
