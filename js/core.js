@@ -53,10 +53,20 @@ const KEYMAP = {
   mute:    ['KeyM'],
 };
 
+// True on phones/tablets; also switched on by the first real touch (see touch.js).
+let IS_TOUCH = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+
 const Input = {
   keys: new Set(), pressedKeys: new Set(), pad: {}, padPrev: {},
-  held(a) { return KEYMAP[a].some(k => this.keys.has(k)) || !!this.pad[a]; },
-  hit(a)  { return KEYMAP[a].some(k => this.pressedKeys.has(k)) || (!!this.pad[a] && !this.padPrev[a]); },
+  touch: {}, touchHits: new Set(),   // on-screen controls (touch.js)
+  typed: [],                          // letters typed this frame (initials entry); '\b' = backspace
+  held(a) { return KEYMAP[a].some(k => this.keys.has(k)) || !!this.pad[a] || !!this.touch[a]; },
+  hit(a)  { return KEYMAP[a].some(k => this.pressedKeys.has(k)) || (!!this.pad[a] && !this.padPrev[a]) || this.touchHits.has(a); },
+  press(a)   { if (!this.touch[a]) this.touchHits.add(a); this.touch[a] = true; },
+  release(a) { this.touch[a] = false; },
+  tap(a)     { this.touchHits.add(a); },
+  // Like hit(), but ignores letter keys, so typing initials (e.g. "J", "M") can't trigger actions.
+  hitNav(a)  { return KEYMAP[a].some(k => !k.startsWith('Key') && this.pressedKeys.has(k)) || (!!this.pad[a] && !this.padPrev[a]) || this.touchHits.has(a); },
   pollPad() {
     this.padPrev = this.pad;
     const p = {};
@@ -77,12 +87,17 @@ const Input = {
     }
     this.pad = p;
   },
-  endFrame() { this.pressedKeys.clear(); },
+  endFrame() { this.pressedKeys.clear(); this.touchHits.clear(); this.typed.length = 0; },
 };
 
 const BLOCKED = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space']);
 addEventListener('keydown', e => {
+  if (e.target && e.target.tagName === 'INPUT') return;   // the phone-keyboard field handles its own keys (touch.js)
   if (BLOCKED.has(e.code)) e.preventDefault();
+  if (!e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    if (/^[a-z]$/i.test(e.key)) Input.typed.push(e.key.toUpperCase());
+    else if (e.key === 'Backspace') { Input.typed.push('\b'); e.preventDefault(); }
+  }
   if (!e.repeat) Input.pressedKeys.add(e.code);
   Input.keys.add(e.code);
   Sfx.unlock();

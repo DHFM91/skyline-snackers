@@ -7,7 +7,10 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 let RES = 1;
 function resize() {
-  const s = Math.min(innerWidth / W, innerHeight / H);
+  // On a phone held upright, fill the width and leave room below for the controls.
+  const portrait = IS_TOUCH && innerHeight > innerWidth;
+  document.body.classList.toggle('portrait', portrait);
+  const s = portrait ? innerWidth / W : Math.min(innerWidth / W, innerHeight / H);
   RES = clamp(s * (devicePixelRatio || 1), 1, 3);
   canvas.width = Math.round(W * RES); canvas.height = Math.round(H * RES);
   canvas.style.width = Math.floor(W * s) + 'px'; canvas.style.height = Math.floor(H * s) + 'px';
@@ -17,6 +20,7 @@ addEventListener('resize', resize); resize();
 const TITLE = 'SKYLINE SNACKERS';
 const SUBTITLE = 'AN ELDRITCH WORLD TOUR';
 const START_LIVES = 1;   // lives per game (and per continue)
+const T = (keys, touch) => (IS_TOUCH ? touch : keys);   // prompt text for keyboard vs touch
 
 function loadHi() { try { return parseInt(localStorage.getItem('skyline-snackers-hi') || '0', 10) || 0; } catch (e) { return 0; } }
 function saveHi(v) { try { localStorage.setItem('skyline-snackers-hi', String(v)); } catch (e) { /* storage unavailable */ } }
@@ -84,16 +88,25 @@ const Game = {
     this.goPhase = 'checking'; this.myEntryT = 0;
     Leaderboard.fetchList().then(() => {
       if (this.state !== 'gameover' || this.goPhase !== 'checking') return;
-      if (Leaderboard.qualifies(this.score)) { this.goPhase = 'initials'; this.initials = [0, 0, 0]; this.slot = 0; this.goT = 0; }
+      if (Leaderboard.qualifies(this.score)) { this.goPhase = 'initials'; this.initials = [0, 0, 0]; this.slot = 0; this.full = false; this.goT = 0; }
       else this.goPhase = 'final';
     });
   },
   updateInitials() {
-    if (Input.hit('up'))    { this.initials[this.slot] = (this.initials[this.slot] + 1) % 26; Sfx.play('select'); }
-    if (Input.hit('down'))  { this.initials[this.slot] = (this.initials[this.slot] + 25) % 26; Sfx.play('select'); }
-    if (Input.hit('left') && this.slot > 0) { this.slot--; Sfx.play('select'); }
-    if (Input.hit('right') && this.slot < 2) { this.slot++; Sfx.play('select'); }
-    if (this.goT > 0.4 && (Input.hit('start') || Input.hit('punch') || Input.hit('jump'))) {
+    // Typed letters (keyboard, or the phone keyboard via touch.js) fill the boxes left to right.
+    // this.full = all three boxes typed (cursor parked on the last box).
+    for (const ch of Input.typed) {
+      if (ch === '\b') { if (this.full) this.full = false; else if (this.slot > 0) this.slot--; Sfx.play('select'); continue; }
+      const i = LETTERS.indexOf(ch); if (i < 0) continue;
+      this.initials[this.slot] = i; Sfx.play('select');
+      if (this.slot < 2) this.slot++; else this.full = true;
+    }
+    // The arcade dial still works: arrows / stick / gamepad (letter keys excluded so typing can't trigger these).
+    if (Input.hitNav('up'))    { this.initials[this.slot] = (this.initials[this.slot] + 1) % 26; Sfx.play('select'); }
+    if (Input.hitNav('down'))  { this.initials[this.slot] = (this.initials[this.slot] + 25) % 26; Sfx.play('select'); }
+    if (Input.hitNav('left') && this.slot > 0) { this.slot--; this.full = false; Sfx.play('select'); }
+    if (Input.hitNav('right') && this.slot < 2) { this.slot++; this.full = false; Sfx.play('select'); }
+    if (this.goT > 0.4 && (Input.hitNav('start') || Input.hitNav('punch') || Input.hitNav('jump'))) {
       Sfx.play('confirm');
       if (this.slot < 2) { this.slot++; return; }
       this.goPhase = 'submitting';
@@ -110,6 +123,29 @@ const Game = {
   addScore(n, x, y) {
     this.score += n;
     if (x !== undefined && n >= 100) FX.text(x, y, '+' + n, '#ffe14d', 12);
+  },
+
+  /* ---------- touch / tap ---------- */
+  cardAt(x, y) {   // which select-screen card is under a point (logical coords)
+    const n = MONSTERS.length, cw = 280, gap = 24, x0 = (W - (n * cw + (n - 1) * gap)) / 2;
+    for (let i = 0; i < n; i++) { const cx = x0 + i * (cw + gap); if (x >= cx && x <= cx + cw && y >= 78 && y <= 498) return i; }
+    return -1;
+  },
+  onTap(x, y) {
+    switch (this.state) {
+      case 'select': {
+        const i = this.cardAt(x, y);
+        if (i < 0) return;
+        if (i === this.sel) Input.tap('start'); else { this.sel = i; Sfx.play('select'); }
+        break;
+      }
+      case 'title': case 'intro': case 'clear': case 'tourdone': Input.tap('start'); break;
+      case 'gameover':
+        if (this.goPhase === 'final') Input.tap('start');
+        else if (this.goPhase === 'initials' && typeof TouchPad !== 'undefined') TouchPad.openKeyboard();
+        break;
+      case 'play': if (this.paused) this.paused = false; break;
+    }
   },
 
   /* ---------- combat ---------- */
@@ -208,7 +244,7 @@ const Game = {
   update(dt) {
     Input.pollPad();
     this.t += dt; this.stateT += dt;
-    if (Input.hit('mute')) Sfx.muted = !Sfx.muted;
+    if (Input.hit('mute') && !(this.state === 'gameover' && this.goPhase === 'initials')) Sfx.muted = !Sfx.muted;
     const go = Input.hit('start') || Input.hit('punch') || Input.hit('jump');
     switch (this.state) {
       case 'title':
@@ -338,7 +374,7 @@ const Game = {
       case 'title': this.drawTitle(); break;
       case 'select': this.drawSelect(); break;
       case 'intro': this.drawHUD(); this.drawIntro(); break;
-      case 'play': this.drawHUD(); if (this.paused) this.drawBanner('PAUSED', 'P to resume  ·  M to mute'); else if (this.helpT > 0) this.drawHelp(); break;
+      case 'play': this.drawHUD(); if (this.paused) this.drawBanner('PAUSED', T('P to resume  ·  M to mute', 'Tap the screen to resume')); else if (this.helpT > 0) this.drawHelp(); break;
       case 'clear': this.drawHUD(); this.drawClear(); break;
       case 'gameover': this.drawHUD(); this.drawGameOver(); break;
       case 'tourdone': this.drawTourDone(); break;
@@ -425,6 +461,11 @@ const Game = {
     ctx.globalAlpha = a;
     ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.beginPath(); ctx.roundRect(W / 2 - 330, H - 42, 660, 30, 8); ctx.fill();
     const m = this.monster;
+    if (IS_TOUCH) {
+      this.text(`STICK: ${m.s.flies ? 'FLY' : 'WALK / CLIMB'}   PUNCH (+ STICK UP/DOWN TO AIM)   ${m.s.flies ? '' : 'JUMP   '}SPECIAL: ${m.def.specialName}`, W / 2, H - 22, 11, '#fff', 'center', 0);
+      ctx.globalAlpha = 1;
+      return;
+    }
     const move = m.s.flies ? 'ARROWS/WASD fly' : '←→ walk  ↑↓ climb';
     this.text(`${move}   Z/J punch (+↑/↓ to aim)   ${m.s.flies ? '' : 'X/K jump   '}C/L ${m.def.specialName}   P pause`, W / 2, H - 22, 11, '#fff', 'center', 0);
     ctx.globalAlpha = 1;
@@ -451,7 +492,7 @@ const Game = {
       if (this.stateT > 0.6) this.text('HEALTH BONUS   ' + this.bonus.hp, W / 2, 245, 16, '#fff', 'center', 3);
       if (this.stateT > 1.0) this.text('SPEED BONUS   ' + this.bonus.time, W / 2, 272, 16, '#fff', 'center', 3);
     }
-    if (this.stateT > 1.4) this.text('PRESS ENTER TO TRAVEL ON', W / 2, 315, 12, Math.sin(this.t * 6) > 0 ? '#ffe14d' : '#fff', 'center', 3);
+    if (this.stateT > 1.4) this.text(T('PRESS ENTER TO TRAVEL ON', 'TAP TO TRAVEL ON'), W / 2, 315, 12, Math.sin(this.t * 6) > 0 ? '#ffe14d' : '#fff', 'center', 3);
   },
   drawGameOver() {
     ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0, 0, W, H);
@@ -474,7 +515,7 @@ const Game = {
         this.text(LETTERS[this.initials[i]], x, 287, 50, on ? '#ffe14d' : '#fff', 'center', 5);
         if (on) { this.text('▲', x, 220, 14, blink ? '#ffe14d' : '#fff', 'center', 2); this.text('▼', x, 328, 14, blink ? '#ffe14d' : '#fff', 'center', 2); }
       }
-      this.text('↑↓ CHANGE LETTER   ←→ MOVE   ENTER / PUNCH TO CONFIRM', W / 2, 372, 11, '#ccc', 'center', 2);
+      this.text(T('TYPE YOUR INITIALS (OR ↑↓ ←→ TO DIAL)   ·   ENTER TO CONFIRM', 'TAP THE LETTERS TO TYPE, OR DIAL WITH THE STICK   ·   PUNCH TO CONFIRM'), W / 2, 372, 11, '#ccc', 'center', 2);
       return;
     }
     // final: the board
@@ -493,14 +534,14 @@ const Game = {
       this.text(e ? e.m : '', cols[3], y, 11, col, 'left', 3);
       this.text(e ? e.c : '', cols[4], y, 11, col, 'right', 3);
     }
-    if (this.stateT > 1.2) this.text('PRESS ENTER TO PICK A MONSTER AND CONTINUE (SCORE RESETS)', W / 2, H - 22, 12, blink ? '#fff' : '#aaa', 'center', 3);
+    if (this.stateT > 1.2) this.text(T('PRESS ENTER', 'TAP') + ' TO PICK A MONSTER AND CONTINUE (SCORE RESETS)', W / 2, H - 22, 12, blink ? '#fff' : '#aaa', 'center', 3);
   },
   drawTourDone() {
     ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0, 0, W, H);
     this.text('WORLD TOUR COMPLETE', W / 2, 200, 44, '#7dffb0', 'center', 6);
     this.text('The stars are right. The cities are not.', W / 2, 240, 15, '#fff', 'center', 3);
     this.text('SCORE ' + this.score, W / 2, 285, 20, '#ffe14d', 'center', 4);
-    if (this.stateT > 1.5) this.text('PRESS ENTER FOR TOUR ' + (this.tour + 1) + ' (HARDER)', W / 2, 340, 13, Math.sin(this.t * 6) > 0 ? '#fff' : '#aaa', 'center', 3);
+    if (this.stateT > 1.5) this.text(T('PRESS ENTER', 'TAP') + ' FOR TOUR ' + (this.tour + 1) + ' (HARDER)', W / 2, 340, 13, Math.sin(this.t * 6) > 0 ? '#fff' : '#aaa', 'center', 3);
   },
   drawTitle() {
     const t = this.t;
@@ -519,7 +560,7 @@ const Game = {
     this.text(TITLE, 0, wob, 64, '#ffe14d', 'center', 8);
     ctx.restore();
     this.text(SUBTITLE, W / 2, 222, 18, '#7dffb0', 'center', 4);
-    if (Math.sin(t * 5) > -0.3) this.text('PRESS ENTER', W / 2, 310, 22, '#fff', 'center', 5);
+    if (Math.sin(t * 5) > -0.3) this.text(T('PRESS ENTER', 'TAP TO START'), W / 2, 310, 22, '#fff', 'center', 5);
     this.text('HIGH SCORE: ' + this.hi, W / 2, 345, 12, '#ccc', 'center', 3);
     this.text('PARODY GAME -- ALL CHARACTERS ARE ORIGINAL DESIGNS OR PUBLIC DOMAIN', W / 2, H - 14, 9, '#aaa', 'center', 2);
   },
@@ -554,7 +595,7 @@ const Game = {
       this.text(def.passive, x + cw / 2, yy + 44, 9, '#ccc', 'center', 0);
       this.text(def.homage, x + cw / 2, y + h - 8, 8, '#888', 'center', 0);
     });
-    this.text('←  →  TO CHOOSE   ·   ENTER TO STOMP', W / 2, H - 16, 12, '#fff', 'center', 3);
+    this.text(T('←  →  TO CHOOSE   ·   ENTER TO STOMP', 'TAP A MONSTER   ·   TAP IT AGAIN TO STOMP'), W / 2, H - 16, 12, '#fff', 'center', 3);
   },
 };
 
@@ -566,6 +607,7 @@ function frame(now) {
   acc += Math.min(0.1, (now - last) / 1000); last = now;
   while (acc >= STEP) { Game.update(STEP); acc -= STEP; }
   Game.render();
+  if (typeof TouchPad !== 'undefined') TouchPad.sync();
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
