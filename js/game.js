@@ -519,8 +519,8 @@ const Game = {
     ctx.restore();
     this.text(SUBTITLE, W / 2, 222, 18, '#7dffb0', 'center', 4);
     if (Math.sin(t * 5) > -0.3) this.text('PRESS ENTER', W / 2, 310, 22, '#fff', 'center', 5);
-    this.text('HI ' + this.hi, W / 2, 345, 12, '#ccc', 'center', 3);
-    this.text('DHF MEDIA  ·  A PARODY — ALL CHARACTERS ARE ORIGINAL DESIGNS OR PUBLIC DOMAIN', W / 2, H - 14, 9, '#aaa', 'center', 2);
+    this.text('HIGH SCORE: ' + this.hi, W / 2, 345, 12, '#ccc', 'center', 3);
+    this.text('PARODY GAME -- ALL CHARACTERS ARE ORIGINAL DESIGNS OR PUBLIC DOMAIN', W / 2, H - 14, 9, '#aaa', 'center', 2);
   },
   drawSelect() {
     const t = this.t;
