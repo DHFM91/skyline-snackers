@@ -2,23 +2,65 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Skyline Snackers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
 <style>
-  html, body { margin: 0; height: 100%; background: #07070b; overflow: hidden; }
+  html, body { margin: 0; height: 100%; background: #07070b; overflow: hidden; overscroll-behavior: none; }
   body { display: flex; align-items: center; justify-content: center; }
+  body.portrait { align-items: flex-start; padding-top: max(8px, env(safe-area-inset-top)); box-sizing: border-box; }
   canvas { display: block; box-shadow: 0 0 40px #000; outline: none; }
+  body.touch, body.touch * { touch-action: none; -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+
+  /* ---- touch controls (only shown on touch devices) ---- */
+  #touch { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  #touch[hidden] { display: none; }
+  #stick { position: absolute; left: max(18px, env(safe-area-inset-left)); bottom: max(18px, env(safe-area-inset-bottom));
+    width: 132px; height: 132px; border-radius: 50%; pointer-events: auto;
+    background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.35); }
+  #knob { position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%;
+    background: rgba(255,225,77,0.7); box-shadow: 0 0 12px rgba(0,0,0,0.5); }
+  #btns { position: absolute; right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom));
+    width: 200px; height: 176px; pointer-events: none; }
+  .tb { position: absolute; pointer-events: auto; border-radius: 50%; padding: 0; color: #fff;
+    border: 2px solid rgba(255,255,255,0.55); font: 12px "Bungee", Impact, "Arial Black", sans-serif;
+    text-shadow: 0 1px 2px #000; }
+  .tb.on { filter: brightness(1.7); transform: scale(0.93); }
+  #b-punch   { width: 86px; height: 86px; right: 0;    bottom: 0;    background: rgba(255,59,48,0.45); font-size: 13px; }
+  #b-jump    { width: 70px; height: 70px; right: 100px; bottom: 2px; background: rgba(52,152,219,0.45); }
+  #b-special { width: 66px; height: 66px; right: 34px; bottom: 100px; background: rgba(46,180,110,0.45); font-size: 9px; }
+  #b-pause   { width: 44px; height: 36px; border-radius: 10px; left: 50%; margin-left: -22px; top: max(46px, env(safe-area-inset-top));
+    background: rgba(0,0,0,0.45); font-size: 13px; }
+  body.portrait #stick { width: 150px; height: 150px; bottom: max(40px, env(safe-area-inset-bottom)); }
+  body.portrait #btns  { bottom: max(40px, env(safe-area-inset-bottom)); }
+  body.portrait #b-pause { top: auto; bottom: max(200px, env(safe-area-inset-bottom)); }
+  /* invisible text field that summons the phone keyboard for initials */
+  #kbd { position: fixed; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; font-size: 16px; }
+  body.touch #kbd { -webkit-user-select: text; user-select: text; touch-action: auto; }
 </style>
 </head>
 <body>
-<canvas id="game" tabindex="0"></canvas>
-<script src="js/core.js?v=5"></script>
-<script src="js/world.js?v=5"></script>
-<script src="js/monsters.js?v=5"></script>
-<script src="js/leaderboard.js?v=5"></script>
-<script src="js/game.js?v=5"></script>
+<canvas id="game"></canvas>
+<input id="kbd" type="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done" aria-label="Type your initials">
+<div id="touch" hidden>
+  <div id="stick"><div id="knob"></div></div>
+  <div id="btns">
+    <button class="tb" id="b-special" data-act="special">SPECIAL</button>
+    <button class="tb" id="b-jump" data-act="jump">JUMP</button>
+    <button class="tb" id="b-punch" data-act="punch">PUNCH</button>
+  </div>
+  <button class="tb" id="b-pause" data-act="pause">II</button>
+</div>
+<script src="js/core.js?v=6"></script>
+<script src="js/world.js?v=6"></script>
+<script src="js/monsters.js?v=6"></script>
+<script src="js/leaderboard.js?v=6"></script>
+<script src="js/game.js?v=6"></script>
+<script src="js/touch.js?v=6"></script>
 </body>
 </html>

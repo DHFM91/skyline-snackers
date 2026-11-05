@@ -21,6 +21,11 @@ loads from Google Fonts when you're online, and falls back to Impact when you're
 
 On a roof, press **Down** to hang off the top of the building and punch in.
 
+**On a phone or tablet** the game switches to touch controls automatically: a drag joystick on the
+left (move, climb or fly), and **PUNCH**, **JUMP** and **SPECIAL** buttons on the right, plus a pause
+button. Tap to start, tap a monster to pick it and tap it again to play. Landscape gives the
+biggest view; in portrait the game sits on top with the controls underneath.
+
 ## How a city works
 
 - Break windows (or knock them in) to grab whoever is inside. People and soldiers
@@ -33,7 +38,9 @@ On a roof, press **Down** to hang off the top of the building and punch in.
 - When your health runs out, your monster shrinks into something embarrassing and
   slinks away. You get one life (`START_LIVES` in `js/game.js`).
 - **Game Over** checks the **World Top 10**. If your score makes the list, you enter
-  3 initials arcade-style (↑↓ change the letter, ←→ move, Enter or Punch to confirm).
+  3 initials: just type them (e.g. C-A-T, Backspace to fix, Enter to confirm), or dial them
+  arcade-style (↑↓ change the letter, ←→ move, Punch to confirm). On a phone, tap the letters
+  to bring up the keyboard, or dial with the joystick.
   Then you go back to the monster select screen to continue from the city where you fell.
   You can switch monsters there, and your score resets.
 - The tour runs Peoria → Paris → Tokyo → Cairo → London → Moscow → Rio → R'lyeh.
@@ -55,6 +62,7 @@ js/core.js        constants, helpers, keyboard/gamepad input, synthesized sound
 js/world.js       tour stops, effects, buildings, civilians, army, backdrops
 js/monsters.js    Monster physics + the roster (registerMonster calls)
 js/leaderboard.js global top-10 (shared JSON bin, read/written only at Game Over)
+js/touch.js       on-screen joystick and buttons for phones/tablets
 js/game.js        state machine, combat rules, HUD and menus, main loop
 LEGAL_NOTES.md    IP reasoning, and the checklist to run before adding a homage
 ```
