@@ -31,7 +31,7 @@ On a roof, press **Down** to hang off the top of the building and punch in.
 - The army escalates over time: rifle squads first, then helicopters, then tanks.
   Soldiers also shoot from windows.
 - When your health runs out, your monster shrinks into something embarrassing and
-  slinks away. You have 3 lives.
+  slinks away. You get one life (`START_LIVES` in `js/game.js`).
 - **Game Over** checks the **World Top 10**. If your score makes the list, you enter
   3 initials arcade-style (↑↓ change the letter, ←→ move, Enter or Punch to confirm).
   Then you go back to the monster select screen to continue from the city where you fell.
