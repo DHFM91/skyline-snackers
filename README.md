@@ -26,7 +26,7 @@ On a roof, press **Down** to hang off the top of the building and punch in.
 - Break windows (or knock them in) to grab whoever is inside. People and soldiers
   heal you. **Drumsticks** heal a lot. **Money bags** are worth points. **Toasters**
   shock you, so don't eat them.
-- A building comes down when about half of its windows are holes, or when a whole floor is gone.
+- A building comes down when about a third of its windows are holes, or when a whole floor is gone.
 - Level the whole street to "crunch" the city. You get a health bonus and a speed bonus.
 - The army escalates over time: rifle squads first, then helicopters, then tanks.
   Soldiers also shoot from windows.
