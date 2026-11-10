@@ -5,6 +5,7 @@
    ========================================================= */
 
 const LEADERBOARD_URL = 'https://json.extendsclass.com/bin/1cdcae4e74a3';
+const lbReadJson = async r => { const t = await r.text(), i = t.search(/<!doctype|<html/i); return JSON.parse(i < 0 ? t : t.slice(0, i)); }; // the score host sometimes tacks a web page onto its reply; read only the JSON part
 const LEADERBOARD_SIZE = 10;
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -31,7 +32,7 @@ const Leaderboard = {
     try {
       const r = await fetch(LEADERBOARD_URL, { cache: 'no-store', signal: ctl.signal });
       if (!r.ok) throw new Error('HTTP ' + r.status);
-      this.list = cleanBoard(await r.json());
+      this.list = cleanBoard(await lbReadJson(r));
       this.offline = false;
     } catch (e) {
       this.offline = true;   // keep the last known list
