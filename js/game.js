@@ -44,7 +44,7 @@ const Game = {
     this.startCity();
   },
   startCity() {
-    this.d = Math.min(4, 1 + this.cityIdx * 0.2 + (this.tour - 1) * 0.9);
+    this.d = Math.min(4, 1 + (this.cityIdx / Math.max(1, CITIES.length - 1)) * 1.6 + (this.tour - 1) * 0.9);   // ramps over one tour, then each loop starts harder
     this.buildLevel();
     this.monster = new Monster(MONSTERS[this.sel]);
     this.monster.reset(W / 2);
@@ -130,11 +130,27 @@ const Game = {
   },
 
   /* ---------- touch / tap ---------- */
-  // Select screen is a carousel: up to 3 full-size cards, sliding to keep the pick in view.
-  selTarget() { const n = MONSTERS.length; return n <= 3 ? (n - 1) / 2 : clamp(this.sel, 1, n - 2); },
-  cardX(i) { const cw = 280, gap = 24, sc = this.selScroll ?? this.selTarget(); return W / 2 - cw / 2 + (i - sc) * (cw + gap); },
-  cardAt(x, y) {   // which select-screen card is under a point (logical coords)
-    for (let i = 0; i < MONSTERS.length; i++) { const cx = this.cardX(i); if (x >= Math.max(0, cx) && x <= Math.min(W, cx + 280) && y >= 78 && y <= 498) return i; }
+  // Select screen is a fighting-game roster: every monster on one grid, tiles shrink as the roster grows.
+  rosterGrid() {
+    const n = MONSTERS.length, gx = 40, gy = 356, gw = W - 80, gh = 140, gap = 8;
+    let best = { cols: n, s: 0 };
+    for (let cols = 1; cols <= n; cols++) {
+      const rows = Math.ceil(n / cols);
+      const sz = Math.min(110, (gw - (cols - 1) * gap) / cols, (gh - (rows - 1) * gap) / rows);
+      if (sz > best.s) best = { cols, s: sz };
+    }
+    const { cols, s: sz } = best, rows = Math.ceil(n / cols);
+    const tiles = [];
+    for (let i = 0; i < n; i++) {
+      const r = Math.floor(i / cols), c = i % cols, inRow = Math.min(cols, n - r * cols);
+      const rowW = inRow * sz + (inRow - 1) * gap, x0 = W / 2 - rowW / 2;
+      tiles.push({ x: x0 + c * (sz + gap), y: gy + (gh - (rows * sz + (rows - 1) * gap)) / 2 + r * (sz + gap), s: sz });
+    }
+    return { cols, rows, tiles };
+  },
+  cardAt(x, y) {   // which roster tile is under a point (logical coords)
+    const { tiles } = this.rosterGrid();
+    for (let i = 0; i < tiles.length; i++) { const t = tiles[i]; if (x >= t.x && x <= t.x + t.s && y >= t.y && y <= t.y + t.s) return i; }
     return -1;
   },
   onTap(x, y) {
@@ -311,6 +327,10 @@ const Game = {
         this.updateAmbient(dt);
         if (Input.hit('left'))  { this.sel = (this.sel + MONSTERS.length - 1) % MONSTERS.length; Sfx.play('select'); }
         if (Input.hit('right')) { this.sel = (this.sel + 1) % MONSTERS.length; Sfx.play('select'); }
+        if (Input.hit('up') || Input.hit('down')) {
+          const { cols } = this.rosterGrid(), n = MONSTERS.length, v = this.sel + (Input.hit('up') ? -cols : cols);
+          if (v >= 0 && v < n) { this.sel = v; Sfx.play('select'); }
+        }
         if (go && this.stateT > 0.3) {
           Sfx.play('confirm');
           if (this.continuing) { this.continuing = false; this.score = 0; this.lives = START_LIVES; this.startCity(); }
@@ -348,7 +368,7 @@ const Game = {
         break;
       case 'tourdone':
         this.updateAmbient(dt);
-        if (go && this.stateT > 1.5) { this.tour++; this.cityIdx = 0; this.startCity(); }
+        if ((go && this.stateT > 1.5) || this.stateT > 6) { this.tour++; this.cityIdx = 0; this.startCity(); }   // never parks here: rolls into the next tour on its own
         break;
     }
     Input.endFrame();
@@ -623,45 +643,48 @@ const Game = {
     this.text('PARODY GAME -- ALL CHARACTERS ARE ORIGINAL DESIGNS OR PUBLIC DOMAIN', W / 2, H - 14, 9, '#aaa', 'center', 2);
   },
   drawSelect() {
-    const t = this.t;
-    ctx.fillStyle = 'rgba(8,6,20,0.7)'; ctx.fillRect(0, 0, W, H);
-    this.text('CHOOSE YOUR MONSTER', W / 2, this.continuing ? 44 : 52, 30, '#ffe14d', 'center', 5);
-    if (this.continuing) this.text('CONTINUE IN ' + this.city.name + '  ·  SCORE RESETS', W / 2, 66, 11, '#7dffb0', 'center', 3);
-    const n = MONSTERS.length, cw = 280, tgt = this.selTarget();
-    this.selScroll = this.selScroll == null ? tgt : this.selScroll + (tgt - this.selScroll) * Math.min(1, (1 / 60) * 12);
-    if (Math.abs(this.selScroll - tgt) < 0.002) this.selScroll = tgt;
-    MONSTERS.forEach((def, i) => {
-      const x = this.cardX(i), y = 78, h = 420, on = i === this.sel;
-      if (x > W || x + cw < 0) return;
-      ctx.fillStyle = on ? 'rgba(255,225,77,0.14)' : 'rgba(255,255,255,0.05)';
-      ctx.beginPath(); ctx.roundRect(x, y, cw, h, 14); ctx.fill();
-      ctx.lineWidth = on ? 3 : 1.5; ctx.strokeStyle = on ? '#ffe14d' : 'rgba(255,255,255,0.25)'; ctx.stroke();
-      // preview
-      const s = def.stats, scale = s.flies ? 1.9 : Math.min(1.6, 170 / s.h);
-      ctx.save(); ctx.beginPath(); ctx.rect(x, y, cw, 214); ctx.clip();
-      ctx.translate(x + cw / 2, y + 205 - (s.flies ? 40 : 0)); ctx.scale(scale, scale);
-      const pp = on ? (Math.floor(t * 1.2) % 3 === 2 ? { punch: (t * 5) % 1, hand: { x: s.w * 0.4 + s.reach, y: -s.h * s.armY } } : { walk: true, walkPhase: t * 9 }) : {};
-      def.draw(ctx, demoPose(t + i, pp));
-      ctx.restore();
-      this.text(def.name, x + cw / 2, y + 240, 20, on ? '#ffe14d' : '#fff', 'center', 4);
-      this.text(def.tagline, x + cw / 2, y + 258, 10, '#ddd', 'center', 0);
-      let yy = y + 280;
-      for (const [k, v] of Object.entries(def.bars)) {
-        this.text(k, x + 22, yy + 8, 10, '#bbb', 'left', 0);
-        for (let j = 0; j < 5; j++) { ctx.fillStyle = j < v ? (on ? '#ffe14d' : '#ccc') : 'rgba(255,255,255,0.12)'; ctx.fillRect(x + 92 + j * 34, yy, 30, 9); }
-        yy += 16;
-      }
-      this.text(def.move + '  ·  ' + def.specialName, x + cw / 2, yy + 14, 11, '#7dffb0', 'center', 0);
-      this.text(def.specialDesc, x + cw / 2, yy + 30, 9, '#ccc', 'center', 0);
-      this.text(def.passive, x + cw / 2, yy + 44, 9, '#ccc', 'center', 0);
-      this.text(def.homage, x + cw / 2, y + h - 8, 8, '#888', 'center', 0);
-    });
-    if (n > 3) {   // arrows when more monsters are off to either side
-      const sc = this.selScroll, pulse = 0.6 + 0.4 * Math.sin(t * 5);
-      if (sc > 1.01) this.text('◀', 16, 300, 26, `rgba(255,225,77,${pulse})`, 'left', 3);
-      if (sc < n - 2 - 0.01) this.text('▶', W - 16, 300, 26, `rgba(255,225,77,${pulse})`, 'right', 3);
+    const t = this.t, n = MONSTERS.length;
+    ctx.fillStyle = 'rgba(8,6,20,0.72)'; ctx.fillRect(0, 0, W, H);
+    this.text('CHOOSE YOUR MONSTER', W / 2, this.continuing ? 40 : 46, 30, '#ffe14d', 'center', 5);
+    if (this.continuing) this.text('CONTINUE IN ' + this.city.name + '  ·  SCORE RESETS', W / 2, 62, 11, '#7dffb0', 'center', 3);
+    // detail panel for the highlighted monster
+    const def = MONSTERS[this.sel], s = def.stats;
+    ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.beginPath(); ctx.roundRect(40, 72, W - 80, 272, 14); ctx.fill();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,225,77,0.5)'; ctx.stroke();
+    const scale = s.flies ? 2.1 : Math.min(1.9, 210 / s.h);
+    ctx.save(); ctx.beginPath(); ctx.rect(40, 72, 340, 272); ctx.clip();
+    ctx.translate(210, 330 - (s.flies ? 60 : 0)); ctx.scale(scale, scale);
+    const pp = Math.floor(t * 1.2) % 3 === 2 ? { punch: (t * 5) % 1, hand: { x: s.w * 0.4 + s.reach, y: -s.h * s.armY } } : { walk: true, walkPhase: t * 9 };
+    def.draw(ctx, demoPose(t, pp));
+    ctx.restore();
+    const tx = 400;
+    this.text(def.name, tx, 112, 30, '#ffe14d', 'left', 5);
+    this.text(def.tagline, tx, 134, 12, '#ddd', 'left', 0);
+    let yy = 152;
+    for (const [k, v] of Object.entries(def.bars)) {
+      this.text(k, tx, yy + 9, 11, '#bbb', 'left', 0);
+      for (let j = 0; j < 5; j++) { ctx.fillStyle = j < v ? '#ffe14d' : 'rgba(255,255,255,0.12)'; ctx.fillRect(tx + 70 + j * 44, yy, 40, 10); }
+      yy += 19;
     }
-    this.text(T('←  →  TO CHOOSE   ·   ENTER TO STOMP', 'TAP A MONSTER   ·   TAP IT AGAIN TO STOMP'), W / 2, H - 16, 12, '#fff', 'center', 3);
+    this.text(def.move + '  ·  ' + def.specialName, tx, yy + 18, 13, '#7dffb0', 'left', 0);
+    this.text(def.specialDesc, tx, yy + 36, 11, '#ccc', 'left', 0);
+    this.text(def.passive, tx, yy + 52, 11, '#ccc', 'left', 0);
+    this.text(def.homage, tx, 334, 9, '#888', 'left', 0);
+    // roster grid
+    const { tiles } = this.rosterGrid();
+    MONSTERS.forEach((d, i) => {
+      const tl = tiles[i], on = i === this.sel;
+      ctx.save();
+      ctx.beginPath(); ctx.roundRect(tl.x, tl.y, tl.s, tl.s, Math.max(4, tl.s * 0.1));
+      ctx.fillStyle = on ? 'rgba(255,225,77,0.22)' : '#1a1a24'; ctx.fill();
+      ctx.lineWidth = on ? 3 : 1.5; ctx.strokeStyle = on ? '#ffe14d' : 'rgba(255,255,255,0.3)'; ctx.stroke();
+      ctx.clip();
+      const ps = (tl.s * 1.05) / d.stats.h * (d.stats.flies ? 0.85 : 1.25);
+      ctx.translate(tl.x + tl.s / 2, tl.y + tl.s / 2 + d.stats.h * ps * (d.portraitY || 0.6) - tl.s * 0.05); ctx.scale(ps, ps);
+      d.draw(ctx, demoPose(on ? t : t * 0.3 + i, on ? { walk: true, walkPhase: t * 9 } : {}));
+      ctx.restore();
+    });
+    this.text(T('ARROWS TO CHOOSE   ·   ENTER TO STOMP', 'TAP A MONSTER   ·   TAP IT AGAIN TO STOMP'), W / 2, H - 14, 12, '#fff', 'center', 3);
   },
 };
 
