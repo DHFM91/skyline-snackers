@@ -497,7 +497,7 @@ registerMonster({
 registerMonster({
   id: 'generickaiju', name: 'GENERIC KAIJU', tagline: 'Same giant crab, none of the brand.',
   homage: 'Every giant crab movie, ever',
-  move: 'CLIMBS', specialName: 'FOAM BLAST', specialDesc: 'A frothy cone of suds that wrecks windows, vehicles and soldiers',
+  move: 'CLIMBS', specialName: 'FOAM BLAST', specialDesc: 'A frothy cone of suds that wrecks the block',
   passive: 'Hard shell: takes 10% less damage',
   bars: { STR: 4, SPD: 2, REACH: 2, TOUGH: 4 },
   stats: { w: 60, h: 88, speed: 115, climb: 84, jump: 600, dmg: 2, reach: 30, hitR: 24, punchCd: 0.32,
