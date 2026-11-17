@@ -297,13 +297,40 @@ const Game = {
     this.windowStun = 3;
     FX.text(cx, cy - 50, 'PH\'NGLUI!', '#7dffb0', 20);
   },
+  // Roof Slam: the top floors cave in. power ~0.25 (little hop) .. 1.2 (long drop).
+  roofSlam(m, b, power) {
+    if (!b.alive) return;
+    const floors = power > 0.8 ? 3 : 2, dmg = 0.75 * power;
+    this.slamming = true;
+    for (let f = b.floors - 1; f >= Math.max(0, b.floors - floors) && b.alive; f--) {
+      const fall = f === b.floors - 1 ? 1 : 0.7;
+      for (let c = 0; c < b.cols && b.alive; c++) {
+        const cell = b.cells[f][c];
+        if (cell.hp <= 0 || (cell.hp <= 1 && cell.occ)) continue;   // exposed snacks stay put for a direct grab
+        b.hit(f, c, dmg * fall, this);
+      }
+    }
+    this.slamming = false;
+    this.shake = Math.max(this.shake, 6 + power * 8);
+    Sfx.play('boom');
+    FX.ring(m.x, b.top(), 50 + power * 60, '#fff3b0', 0.4);
+    FX.dust(m.x, b.top() + 6, 6, '#c8bca9', b.w / 2);
+    FX.text(m.x, b.top() - 30, power > 0.8 ? 'MEGA SLAM!' : 'SLAM!', '#ffe14d', power > 0.8 ? 22 : 16);
+    this.addScore(Math.round(250 * power), m.x, b.top() - 50);
+  },
+  // Slamming the street flattens anyone close by.
+  groundSlam(m) {
+    this.shake = Math.max(this.shake, 6); Sfx.play('boom');
+    FX.ring(m.x, GROUND - 4, 70, '#fff3b0', 0.35);
+    for (const wk of this.walkers) if (!wk.dead && Math.abs(wk.x - m.x) < 70) { wk.dead = true; this.addScore(wk.kind === 'soldier' ? 150 : 50, wk.x, GROUND - 24); }
+  },
   collapseBuilding(b) {
     b.collapsing = true; b.sinkV = 20;
     Sfx.play('crumble'); this.shake = 12;
     this.addScore(300 * b.floors, b.x + b.w / 2, b.top() - 20);
     FX.dust(b.x + b.w / 2, GROUND - 20, 14, '#c8bca9', b.w / 2);
     const m = this.monster;
-    if (m && !m.defeated && (m.climbB === b || m.roofB === b)) { m.letGo(); m.takeHit(5, this, true); }
+    if (m && !m.defeated && (m.climbB === b || m.roofB === b)) { m.letGo(); if (!this.slamming) m.takeHit(5, this, true); }
   },
   spawnFaller(x, y, kind) {
     const w = new Walker(kind === 'soldier' ? 'soldier' : 'civ', x, chance(0.5) ? 1 : -1, this.d);

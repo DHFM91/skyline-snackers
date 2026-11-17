@@ -54,7 +54,7 @@ class Monster {
     this.walkPhase = 0; this.climbPhase = 0; this.eatT = 0; this.glide = false;
     this.defeated = false; this.defT = 0; this.onFloor = false; this.reverted = false; this.reported = false;
     this.dashT = 0; this.dashVX = 0; this.dashVY = 0; this.dashSet = null;
-    this.smite = null; this.beam = null; this.moveK = 1;
+    this.smite = null; this.beam = null; this.moveK = 1; this.slam = false; this.airTop = 0; this.slamCd = 0;
     this.entering = true;
   }
   box() { return { x: this.x - this.w / 2, y: this.y - this.h, w: this.w, h: this.h }; }
@@ -62,7 +62,7 @@ class Monster {
 
   update(dt, game, control) {
     this.t += dt;
-    this.punchCd -= dt; this.punchT -= dt; this.hurtT -= dt; this.invuln -= dt; this.specialCd -= dt; this.eatT -= dt;
+    this.punchCd -= dt; this.punchT -= dt; this.hurtT -= dt; this.invuln -= dt; this.specialCd -= dt; this.eatT -= dt; this.slamCd -= dt;
     if (this.defeated) { this.updateDefeat(dt, game); return; }
     if (this.def.tick) this.def.tick(this, dt, game);
     const C = control && !this.entering;
@@ -84,12 +84,12 @@ class Monster {
       this.x += this.vx * dt;
       if (this.state === 'roof') {
         const b = this.roofB;
-        if (!b || !b.alive || this.x < b.x - 4 || this.x > b.x + b.w + 4) { this.state = 'air'; this.vy = 0; this.roofB = null; return; }
+        if (!b || !b.alive || this.x < b.x - 4 || this.x > b.x + b.w + 4) { this.state = 'air'; this.vy = 0; this.roofB = null; this.airTop = this.y; return; }
         this.y = b.top();
         if (D) { this.startClimb(b); this.y = b.top() + this.h * 0.8; return; }
       }
       if (U && this.state === 'ground') { const b = game.faceBuilding(this.x); if (b) { this.startClimb(b); return; } }
-      if (Jhit) { this.vy = -s.jump; this.state = 'air'; this.roofB = null; Sfx.play('jump'); }
+      if (Jhit) { this.vy = -s.jump; this.state = 'air'; this.roofB = null; this.airTop = this.y; Sfx.play('jump'); }
     } else if (this.state === 'climb') {
       const b = this.climbB;
       if (!b || !b.alive) { this.letGo(); return; }
@@ -104,11 +104,14 @@ class Monster {
         this.y = topLimit;
       }
       if (this.y >= GROUND) { this.y = GROUND; this.state = 'ground'; this.climbB = null; }
-      if (Jhit) { this.state = 'air'; this.vy = -s.jump * 0.55; this.climbB = null; Sfx.play('jump'); }
+      if (Jhit) { this.state = 'air'; this.vy = -s.jump * 0.55; this.climbB = null; this.airTop = this.y; Sfx.play('jump'); }
     } else { // air
-      this.vx = dir * s.speed * 0.95; if (dir) this.facing = dir;
+      this.vx = dir * s.speed * (this.slam ? 0.35 : 0.95); if (dir) this.facing = dir;
       const prevY = this.y;
-      this.vy += GRAV * dt;
+      this.airTop = Math.min(this.airTop, this.y);
+      // Roof Slam: press Down in the air to drop hard
+      if (D && !this.slam && !this.entering) { this.slam = true; this.vy = Math.max(this.vy, 520); Sfx.play('dash'); }
+      this.vy += GRAV * (this.slam ? 2.2 : 1) * dt;
       this.glide = !!(s.glide && J && this.vy > 0);
       if (this.glide) this.vy = Math.min(this.vy, 95);
       this.x += this.vx * dt; this.y += this.vy * dt;
@@ -116,9 +119,14 @@ class Monster {
         for (const b of game.buildings) {
           if (!b.alive) continue;
           const top = b.top();
-          if (prevY <= top + 1 && this.y >= top && this.x >= b.x - 2 && this.x <= b.x + b.w + 2) { this.land(game, 'roof', b, top); return; }
+          if (prevY <= top + 1 && this.y >= top && this.x >= b.x - 2 && this.x <= b.x + b.w + 2) {
+            const fall = top - this.airTop, slam = this.slam;
+            this.land(game, 'roof', b, top);
+            if (slam) game.roofSlam(this, b, clamp((fall - 60) / 170, 0.25, 1.2));
+            return;
+          }
         }
-        if (this.y >= GROUND) { this.land(game, 'ground', null, GROUND); return; }
+        if (this.y >= GROUND) { const slam = this.slam; this.land(game, 'ground', null, GROUND); if (slam) game.groundSlam(this); return; }
       }
       if (U) { const b = game.faceBuilding(this.x); if (b && this.y > b.top() + this.h * 0.8) this.startClimb(b); }
     }
@@ -136,8 +144,21 @@ class Monster {
     const sp = Math.hypot(this.vx, this.vy);
     const cap = s.speed * mk;
     if (sp > cap) { this.vx *= cap / sp; this.vy *= cap / sp; }
+    const prevY = this.y;
     this.x += this.vx * dt; this.y += this.vy * dt;
     this.y = clamp(this.y, this.h + 46, GROUND);
+    // Dive Slam (flyers): dive down hard onto a roof
+    if (D && this.vy > s.speed * 0.7 && this.slamCd <= 0) {
+      for (const b of game.buildings) {
+        if (!b.alive) continue;
+        const top = b.top();
+        if (prevY <= top && this.y >= top && this.x >= b.x && this.x <= b.x + b.w) {
+          game.roofSlam(this, b, clamp(this.vy / s.speed, 0.5, 0.9));
+          this.y = top - 1; this.vy = -s.speed * 0.8; this.slamCd = 1.2;
+          break;
+        }
+      }
+    }
   }
 
   updateDash(dt, game) {
@@ -153,7 +174,7 @@ class Monster {
   }
 
   land(game, state, b, y) {
-    this.y = y; this.vy = 0; this.state = state; this.roofB = b; this.glide = false;
+    this.y = y; this.vy = 0; this.state = state; this.roofB = b; this.glide = false; this.slam = false;
     if (this.entering) { this.entering = false; game.shake = Math.max(game.shake, 7); FX.dust(this.x, y, 8, '#cbbfae', 30); Sfx.play('boom'); }
     else FX.dust(this.x, y, 2, '#cbbfae', 14);
     // stomp anything underfoot
@@ -165,7 +186,7 @@ class Monster {
     this.state = 'climb'; this.climbB = b; this.roofB = null; this.vx = 0; this.vy = 0;
     this.x = clamp(this.x, b.x + 8, b.x + b.w - 8);
   }
-  letGo() { this.state = 'air'; this.climbB = null; this.roofB = null; this.vy = 0; }
+  letGo() { this.state = 'air'; this.climbB = null; this.roofB = null; this.vy = 0; this.airTop = this.y; }
 
   // Points the punch checks, nearest-to-hand first. Also stored for drawing.
   hitPoints(dir) {

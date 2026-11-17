@@ -21,6 +21,11 @@ loads from Google Fonts when you're online, and falls back to Impact when you're
 
 On a roof, press **Down** to hang off the top of the building and punch in.
 
+**Roof Slam:** in mid-air, press **Down** to drop hard. Land on a roof and the top floors cave in.
+The longer the fall, the bigger the hit, so leaping from a tall building onto a shorter one is the
+big play (a hop in place barely dents it). Slamming the street flattens people nearby. Flyers do a
+**Dive Slam**: hold Down and dive onto a roof at speed.
+
 **On a phone or tablet** the game switches to touch controls automatically: a drag joystick on the
 left (move, climb or fly), and **PUNCH**, **JUMP** and **SPECIAL** buttons on the right, plus a pause
 button. Tap to start, tap a monster to pick it and tap it again to play. Landscape gives the
