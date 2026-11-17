@@ -138,8 +138,6 @@ class Monster {
     if (sp > cap) { this.vx *= cap / sp; this.vy *= cap / sp; }
     this.x += this.vx * dt; this.y += this.vy * dt;
     this.y = clamp(this.y, this.h + 46, GROUND);
-    if (chance(dt * 25)) FX.add({ x: this.x - this.facing * 18 + rand(-6, 6), y: this.y - this.h * 0.5 + rand(-14, 14), vx: -this.vx * 0.2, vy: 0,
-      grav: 0, life: rand(0.4, 0.8), size: rand(5, 9), color: '#0b0306', shape: 'puff', ground: false });
   }
 
   updateDash(dt, game) {
@@ -147,8 +145,7 @@ class Monster {
     this.x += this.dashVX * dt; this.y += this.dashVY * dt;
     this.y = clamp(this.y, this.h + 46, GROUND);
     // "erased reality" streak
-    FX.add({ x: this.x + rand(-10, 10), y: this.y - this.h * 0.5 + rand(-18, 18), grav: 0, life: 0.5, size: rand(8, 14), color: '#000', shape: 'puff', ground: false });
-    if (chance(0.6)) FX.add({ x: this.x + rand(-20, 20), y: this.y - this.h * 0.5 + rand(-20, 20), grav: 0, life: 0.3, size: 2, color: '#fff', ground: false });
+    if (chance(0.8)) FX.add({ x: this.x + rand(-20, 20), y: this.y - this.h * 0.5 + rand(-20, 20), grav: 0, life: 0.3, size: 2, color: '#fff', ground: false });
     const f = this.facing;
     const pts = [{ x: this.x + f * (this.w * 0.5 + 4), y: this.y - this.h * 0.5 }, { x: this.x, y: this.y - this.h * 0.5 }];
     game.resolveHit(this, pts, this.s.hitR + 4, 2, this.dashSet);

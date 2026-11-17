@@ -110,7 +110,6 @@ const FX = {
   boom(x, y, s = 1) {
     for (let i = 0; i < 16; i++) this.add({ x, y, vx: rand(-200, 200) * s, vy: rand(-220, 60) * s, grav: 200,
       life: rand(0.3, 0.7), size: rand(6, 14) * s, color: pick(['#ffdf6b', '#ff9a3c', '#ff5a2a', '#fff3b0']), shape: 'puff', ground: false });
-    this.dust(x, y, 6, '#555', 20 * s);
     this.ring(x, y, 50 * s, '#fff3b0', 0.35);
   },
   ring(x, y, max, color, life = 0.6) { this.rings.push({ x, y, max, color, life, t: 0 }); },
@@ -534,7 +533,7 @@ class Tank {
         this.fireT = rand(2.8, 4) / this.d;
         if (game.state === 'play') {
           const bx = this.x + this.facing * Math.cos(this.aim) * 26, by = this.y - 22 + Math.sin(this.aim) * 26;
-          game.fire(bx, by, 'shell'); FX.smoke(bx, by, '#ddd'); Sfx.play('cannon');
+          game.fire(bx, by, 'shell'); Sfx.play('cannon');
         }
       }
     }
@@ -565,7 +564,6 @@ class Heli {
     this.t += dt; if (this.flash > 0) this.flash -= dt;
     if (this.falling) {
       this.vy += 500 * dt; this.y += this.vy * dt; this.rot += dt * 4; this.x += this.facing * 40 * dt;
-      if (chance(dt * 40)) FX.smoke(this.x, this.y, '#444');
       if (this.y >= GROUND - 10) { this.dead = true; FX.boom(this.x, GROUND - 10, 1.3); Sfx.play('boom'); game.shake = Math.max(game.shake, 8); }
       return;
     }
@@ -613,7 +611,6 @@ class Shot {
   }
   update(dt) {
     this.x += this.vx * dt; this.y += this.vy * dt; this.life -= dt;
-    if (this.kind === 'shell' && chance(dt * 30)) FX.smoke(this.x, this.y, '#888', 0.4);
     if (this.life <= 0 || this.x < -20 || this.x > W + 20 || this.y < -20) this.dead = true;
     if (this.y > GROUND + 4) { this.dead = true; FX.dust(this.x, GROUND, 1, '#aaa', 3); }
   }
