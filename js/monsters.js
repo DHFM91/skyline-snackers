@@ -931,3 +931,106 @@ registerMonster({
     ctx.restore();
   },
 });
+
+/* ---------- 7. ELDER STATESMAN (sprite: the owner's own art in art/elder-statesman.png) ---------- */
+const STATESMAN_IMG = typeof Image !== 'undefined' ? Object.assign(new Image(), { src: 'art/elder-statesman.png' }) : null;
+registerMonster({
+  id: 'statesman', name: 'ELDER STATESMAN', tagline: 'Has held this seat since before the seat was invented.',
+  homage: 'The permanent ruling class',
+  move: 'CLIMBS', specialName: 'FILIBUSTER', specialDesc: 'Talks forever: red tape stuns the army, and he heals',
+  passive: 'Incumbency: each snack makes him hit harder (stacks, fades)',
+  bars: { STR: 3, SPD: 2, REACH: 3, TOUGH: 4 },
+  stats: { w: 46, h: 90, speed: 100, climb: 76, jump: 560, dmg: 1.75, reach: 40, hitR: 24, punchCd: 0.4,
+    maxHp: 125, armor: 0.92, armY: 0.58, specialCd: 8 },
+  portraitY: 1.0,
+  tick(m, dt, game) {
+    const base = m.def.stats;
+    if (!m.inc) { m.inc = { n: 0, t: 0, prevEat: 0 }; m.s = Object.assign({}, base); }
+    const inc = m.inc, fil = m.fil;
+    if (fil) {
+      fil.t += dt;
+      m.eatT = 0.35;                       // reuse the chomping pose: jowls flapping
+      const front = fil.t * 420;
+      for (const side of [-1, 1]) {
+        for (let i = 0; i < 4; i++) {
+          const x = m.x + side * (front + rand(-14, 14)), y = GROUND - rand(4, 70);
+          FX.add({ x, y, vx: side * rand(60, 180), vy: rand(-60, 20), grav: 40, life: rand(0.6, 1.1), size: rand(5, 9),
+            color: pick(['#fffdf4', '#f3ead2', '#fffdf4']), rot: rand(0, 6), vr: rand(-6, 6), ground: false });
+        }
+        if (chance(0.7)) {
+          const x0 = m.x + side * front, y0 = GROUND - rand(10, 60), v = side * rand(90, 200);
+          for (let k = 0; k < 5; k++) FX.add({ x: x0 + side * k * 4, y: y0, vx: v, vy: 0, grav: 20, life: rand(0.5, 0.9), size: 3.2,
+            color: k % 2 ? '#c0392b' : '#a52c20', ground: false });
+        }
+      }
+      if (fil.t >= fil.dur) m.fil = null;
+    } else if (m.eatT > inc.prevEat + 0.01) {
+      if (inc.n < 5) { inc.n++; FX.text(m.x, m.y - m.h - 12, 'TERM +' + inc.n, '#ffd37a', 12); }
+      inc.t = 6;
+    }
+    inc.prevEat = m.eatT;
+    if (inc.n > 0) { inc.t -= dt; if (inc.t <= 0) { inc.n--; inc.t = 6; } }
+    const slow = m.fil ? 0.12 : 1;
+    m.s.speed = base.speed * slow; m.s.climb = base.climb * slow;
+    m.s.dmg = base.dmg * (1 + 0.08 * inc.n);
+    m.s.armor = base.armor * (1 - 0.02 * inc.n);
+  },
+  special(m, game) {
+    m.fil = { t: 0, dur: 1 };
+    m.vx = 0;
+    for (const wk of game.walkers) if (!wk.air) { wk.stun = Math.max(wk.stun || 0, 3); if (wk.kind === 'civ') wk.panic = true; }
+    for (const tk of game.tanks) tk.stun = Math.max(tk.stun || 0, 3);
+    for (const h of game.helis) if (!h.falling) h.stun = Math.max(h.stun || 0, 3);
+    game.windowStun = Math.max(game.windowStun, 3);
+    m.heal(20);
+    const cy = m.y - m.h * 0.6;
+    for (let i = 0; i < 3; i++) setTimeout(() => FX.ring(m.x, cy, 240, '#c0392b', 0.8), i * 130);
+    FX.text(m.x, cy - 46, 'FILIBUSTER!', '#ffd2c8', 18);
+    game.shake = Math.max(game.shake, 6);
+    Sfx.play('roar');
+  },
+  draw(ctx, p) {
+    // The owner's own sprite art (art/elder-statesman.png), animated with simple transforms.
+    const img = STATESMAN_IMG;
+    if (!img || !img.complete || !img.naturalWidth) return;
+    const t = p.t || 0, H = 104, Wd = H * img.naturalWidth / img.naturalHeight;
+    let dx = 0, dy = 0, rot = 0, sx = 1, sy = 1;
+    if (p.climb) { rot = -0.12; dy = Math.sin(p.climbPhase || 0) * 3; }
+    else if (p.walk) { const k = Math.sin(p.walkPhase || 0); dy = -Math.abs(k) * 4; rot = k * 0.05; }
+    else if (!p.air) sy = 1 + Math.sin(t * 2.4) * 0.015;   // breathing
+    if (p.air) { sy = 1.04; sx = 0.97; }
+    if (p.punch) {
+      const k = Math.sin(Math.min(1, p.punch) * Math.PI);
+      dx += k * 10;
+      rot += k * 0.12 * (p.punchDir === 'up' ? -1 : 1);
+      if (p.punchDir === 'down') dy += k * 4;
+    }
+    if (p.eat) { dy -= Math.abs(Math.sin(t * 20)) * 2; sx *= 1.02; }
+    if (p.dash) rot += 0.1;
+    ctx.save(); ctx.translate(dx, dy); ctx.rotate(rot); ctx.scale(sx, sy);
+    const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(img, -Wd * 0.5, -H, Wd, H);
+    ctx.imageSmoothingEnabled = sm;
+    ctx.restore();
+  },
+  drawRevert(ctx, t) {  // a frail old man, hobbling away behind his walker
+    const st = Math.sin(t * 8), hop = Math.abs(st) * 1.2;
+    ctx.save(); ctx.translate(0, -hop);
+    ctx.strokeStyle = '#9aa0a8'; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(8, -14); ctx.lineTo(8, -2 + hop); ctx.moveTo(14, -14); ctx.lineTo(14, -2 + hop); ctx.moveTo(7, -14); ctx.lineTo(15, -14); ctx.stroke();
+    ctx.fillStyle = '#d6c64a'; ctx.beginPath(); ctx.arc(8, -1 + hop, 1.2, 0, Math.PI * 2); ctx.arc(14, -1 + hop, 1.2, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#2b2d5c'; ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(-2 + st * 2.5, hop); ctx.moveTo(1, -11); ctx.lineTo(2 - st * 2.5, hop); ctx.stroke();
+    ctx.fillStyle = '#141414'; ctx.fillRect(-4 + st * 2.5, -1 + hop, 4, 1.6); ctx.fillRect(0 - st * 2.5, -1 + hop, 4, 1.6);
+    ctx.save(); ctx.translate(0, -11); ctx.rotate(0.45);
+    ctx.fillStyle = '#2b2d5c'; ctx.fillRect(-3.5, -12, 7, 12);
+    ctx.fillStyle = '#c0392b'; ctx.fillRect(0.5, -11, 1.2, 6);
+    ctx.restore();
+    ctx.strokeStyle = '#2b2d5c'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(3, -19); ctx.lineTo(9, -14); ctx.stroke();
+    ell(ctx, 9, -14, 1.6, 1.6, '#e7c6a5');
+    ell(ctx, 5.5, -25.5, 3.6, 3.8, '#e7c6a5');
+    ell(ctx, 3.8, -27.5, 3.2, 2.4, '#f4f3ee');
+    ctx.strokeStyle = '#f4f3ee'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(6.5, -27.6); ctx.lineTo(9, -26.6); ctx.stroke();
+    ctx.restore();
+  },
+});

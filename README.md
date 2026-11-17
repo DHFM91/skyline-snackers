@@ -65,6 +65,7 @@ biggest view; in portrait the game sits on top with the controls underneath.
 | **Generic Kaiju** | Climbing | Foam Blast: a frothy cone of suds that wrecks windows, vehicles and soldiers | A store-brand giant crab. Big punching claw, sturdy. Hard shell: takes 10% less damage. |
 | **Act of God** | Flying | Smite: a volley of 6 lightning strikes rains down across the block, wrecking everything on the strike lines and briefly stunning the army | A grumpy thundercloud with long reach. Slow but sturdy. Overcast: takes 15% less damage. |
 | **Unscheduled Visitor** | Flying | Long Beam: about 1s of charging (aim with Up/Down) while its plates, wings and many eyes spread open, then one red beam down the street that wrecks every window, vehicle and soldier on its line | A silent, many-eyed geometric guest. Glass cannon: hits hard with a long-reach needle jab, but takes 40% extra damage. Never climbs. |
+| **Elder Statesman** | Climbing | Filibuster: plants himself for a second while a wave of red tape and paperwork stuns the army and window snipers for 3s and heals him | Incumbency: each snack stacks +8% punch damage and 2% less damage taken (max 5, fades over time). Slow, sturdy, wide grabby swipes. |
 
 ## Project layout
 
@@ -79,8 +80,8 @@ js/game.js        state machine, combat rules, HUD and menus, main loop
 LEGAL_NOTES.md    IP reasoning, and the checklist to run before adding a homage
 ```
 
-All art is drawn in code (canvas shapes) and every sound is synthesized. The project
-has no image or audio files, so there's nothing borrowed to clear.
+All art is drawn in code (canvas shapes) and every sound is synthesized, with one exception: the
+Elder Statesman sprite (`art/elder-statesman.png`) is the owner's own art. Nothing is borrowed.
 
 ## Adding a monster
 
