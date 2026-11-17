@@ -129,9 +129,11 @@ const Game = {
   },
 
   /* ---------- touch / tap ---------- */
+  // Select screen is a carousel: up to 3 full-size cards, sliding to keep the pick in view.
+  selTarget() { const n = MONSTERS.length; return n <= 3 ? (n - 1) / 2 : clamp(this.sel, 1, n - 2); },
+  cardX(i) { const cw = 280, gap = 24, sc = this.selScroll ?? this.selTarget(); return W / 2 - cw / 2 + (i - sc) * (cw + gap); },
   cardAt(x, y) {   // which select-screen card is under a point (logical coords)
-    const n = MONSTERS.length, cw = 280, gap = 24, x0 = (W - (n * cw + (n - 1) * gap)) / 2;
-    for (let i = 0; i < n; i++) { const cx = x0 + i * (cw + gap); if (x >= cx && x <= cx + cw && y >= 78 && y <= 498) return i; }
+    for (let i = 0; i < MONSTERS.length; i++) { const cx = this.cardX(i); if (x >= Math.max(0, cx) && x <= Math.min(W, cx + 280) && y >= 78 && y <= 498) return i; }
     return -1;
   },
   onTap(x, y) {
@@ -622,9 +624,12 @@ const Game = {
     ctx.fillStyle = 'rgba(8,6,20,0.7)'; ctx.fillRect(0, 0, W, H);
     this.text('CHOOSE YOUR MONSTER', W / 2, this.continuing ? 44 : 52, 30, '#ffe14d', 'center', 5);
     if (this.continuing) this.text('CONTINUE IN ' + this.city.name + '  ·  SCORE RESETS', W / 2, 66, 11, '#7dffb0', 'center', 3);
-    const n = MONSTERS.length, cw = 280, gap = 24, x0 = (W - (n * cw + (n - 1) * gap)) / 2;
+    const n = MONSTERS.length, cw = 280, tgt = this.selTarget();
+    this.selScroll = this.selScroll == null ? tgt : this.selScroll + (tgt - this.selScroll) * Math.min(1, (1 / 60) * 12);
+    if (Math.abs(this.selScroll - tgt) < 0.002) this.selScroll = tgt;
     MONSTERS.forEach((def, i) => {
-      const x = x0 + i * (cw + gap), y = 78, h = 420, on = i === this.sel;
+      const x = this.cardX(i), y = 78, h = 420, on = i === this.sel;
+      if (x > W || x + cw < 0) return;
       ctx.fillStyle = on ? 'rgba(255,225,77,0.14)' : 'rgba(255,255,255,0.05)';
       ctx.beginPath(); ctx.roundRect(x, y, cw, h, 14); ctx.fill();
       ctx.lineWidth = on ? 3 : 1.5; ctx.strokeStyle = on ? '#ffe14d' : 'rgba(255,255,255,0.25)'; ctx.stroke();
@@ -648,6 +653,11 @@ const Game = {
       this.text(def.passive, x + cw / 2, yy + 44, 9, '#ccc', 'center', 0);
       this.text(def.homage, x + cw / 2, y + h - 8, 8, '#888', 'center', 0);
     });
+    if (n > 3) {   // arrows when more monsters are off to either side
+      const sc = this.selScroll, pulse = 0.6 + 0.4 * Math.sin(t * 5);
+      if (sc > 1.01) this.text('◀', 16, 300, 26, `rgba(255,225,77,${pulse})`, 'left', 3);
+      if (sc < n - 2 - 0.01) this.text('▶', W - 16, 300, 26, `rgba(255,225,77,${pulse})`, 'right', 3);
+    }
     this.text(T('←  →  TO CHOOSE   ·   ENTER TO STOMP', 'TAP A MONSTER   ·   TAP IT AGAIN TO STOMP'), W / 2, H - 16, 12, '#fff', 'center', 3);
   },
 };
