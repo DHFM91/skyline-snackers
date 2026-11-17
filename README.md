@@ -64,6 +64,7 @@ biggest view; in portrait the game sits on top with the controls underneath.
 | **Chronomunch** | Flying | Time Chomp: a lunge that eats everything in its path | Never climbs. Fragile. |
 | **Generic Kaiju** | Climbing | Foam Blast: a frothy cone of suds that wrecks windows, vehicles and soldiers | A store-brand giant crab. Big punching claw, sturdy. Hard shell: takes 10% less damage. |
 | **Act of God** | Flying | Smite: a volley of 6 lightning strikes rains down across the block, wrecking everything on the strike lines and briefly stunning the army | A grumpy thundercloud with long reach. Slow but sturdy. Overcast: takes 15% less damage. |
+| **Unscheduled Visitor** | Flying | Long Beam: about 1s of charging (aim with Up/Down) while its plates, wings and many eyes spread open, then one red beam down the street that wrecks every window, vehicle and soldier on its line | A silent, many-eyed geometric guest. Glass cannon: hits hard with a long-reach needle jab, but takes 40% extra damage. Never climbs. |
 
 ## Project layout
 

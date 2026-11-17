@@ -54,7 +54,7 @@ class Monster {
     this.walkPhase = 0; this.climbPhase = 0; this.eatT = 0; this.glide = false;
     this.defeated = false; this.defT = 0; this.onFloor = false; this.reverted = false; this.reported = false;
     this.dashT = 0; this.dashVX = 0; this.dashVY = 0; this.dashSet = null;
-    this.smite = null;
+    this.smite = null; this.beam = null; this.moveK = 1;
     this.entering = true;
   }
   box() { return { x: this.x - this.w / 2, y: this.y - this.h, w: this.w, h: this.h }; }
@@ -128,12 +128,14 @@ class Monster {
     const s = this.s;
     if (this.entering) { this.y += 240 * dt; if (this.y >= 300) { this.entering = false; this.vy = 0; } return; }
     const ax = (R ? 1 : 0) - (L ? 1 : 0), ay = (D ? 1 : 0) - (U ? 1 : 0);
-    if (ax) this.facing = ax;
-    this.vx += ax * s.speed * 7 * dt; this.vy += ay * s.speed * 7 * dt;
+    const mk = this.moveK;
+    if (ax && mk >= 1) this.facing = ax;
+    this.vx += ax * s.speed * 7 * dt * mk; this.vy += ay * s.speed * 7 * dt * mk;
     const damp = Math.pow(0.015, dt);
     if (!ax) this.vx *= damp; if (!ay) this.vy *= damp;
     const sp = Math.hypot(this.vx, this.vy);
-    if (sp > s.speed) { this.vx *= s.speed / sp; this.vy *= s.speed / sp; }
+    const cap = s.speed * mk;
+    if (sp > cap) { this.vx *= cap / sp; this.vy *= cap / sp; }
     this.x += this.vx * dt; this.y += this.vy * dt;
     this.y = clamp(this.y, this.h + 46, GROUND);
     if (chance(dt * 25)) FX.add({ x: this.x - this.facing * 18 + rand(-6, 6), y: this.y - this.h * 0.5 + rand(-14, 14), vx: -this.vx * 0.2, vy: 0,
@@ -240,8 +242,13 @@ class Monster {
       punch: this.punchT > 0 ? 1 - this.punchT / 0.2 : 0, punchDir: this.punchDir, hand: this.hand,
       air: this.state === 'air', glide: this.glide, eat: this.eatT > 0 ? this.eatT / 0.35 : 0,
       dash: this.dashT > 0, fly: this.state === 'fly',
+      charge: this.beamCharge(), aimDy: this.beam && !this.defeated ? this.beam.aim : 0,
+      beam: this.beamPower(), beamDy: this.beam ? this.beam.by - this.y : 0,
+      beamLen: (this.facing > 0 ? W - this.x : this.x) + 24,
     };
   }
+  beamCharge() { const b = this.beam; return b && !this.defeated && b.st === 'charge' ? clamp(b.t / b.chargeT, 0, 1) : 0; }
+  beamPower() { const b = this.beam; return b && !this.defeated && b.st === 'fire' ? clamp(1 - b.ft / b.fireT, 0, 1) : 0; }
   draw(ctx) {
     if (this.y < -200) return;
     // shadow
@@ -744,6 +751,186 @@ registerMonster({
     ell(ctx, -4, -17, 5, 4, '#9a93ad'); ell(ctx, 3, -19, 6, 5, '#aaa3bd'); ell(ctx, 8, -16, 4.5, 3.6, '#9a93ad'); ell(ctx, 1, -15, 9, 3.6, '#b5aec7');
     ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(1, -18, 0.9, 0, Math.PI * 2); ctx.arc(6, -18, 0.9, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = '#222'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(3.5, -13.5, 2, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+    ctx.restore();
+  },
+});
+
+/* ---------- 6. UNSCHEDULED VISITOR (original: the silent geometric invader of giant-robot fiction) ---------- */
+registerMonster({
+  id: 'visitor', name: 'UNSCHEDULED VISITOR', tagline: 'It has arrived. It did not call ahead.',
+  homage: 'Mysterious invaders of a certain giant-robot genre',
+  move: 'FLIES', specialName: 'LONG BEAM', specialDesc: 'Slow charge, then one red beam across the whole street',
+  passive: 'Glass jaw: hits like a truck, breaks like a vase',
+  bars: { STR: 5, SPD: 3, REACH: 4, TOUGH: 1 },
+  stats: { w: 40, h: 60, speed: 150, climb: 0, jump: 0, dmg: 2.2, reach: 64, hitR: 12, punchCd: 0.8, maxHp: 70,
+    armor: 1.4, armY: 0.5, flies: true, specialCd: 8 },
+  portraitY: 0.5,
+  special(m, game) {
+    if (m.beam) return;
+    m.beam = { st: 'charge', t: 0, chargeT: 1.0, fireT: 0.35, ft: 0, aim: 0, by: 0, f: m.facing, once: null };
+    m.punchCd = Math.max(m.punchCd, 1.4);
+    FX.ring(m.x, m.y - m.h * 0.5, 70, '#ff5a64', 0.9);
+    Sfx.play('roar');
+  },
+  tick(m, dt, game) {
+    const b = m.beam;
+    if (!b) { m.moveK = 1; return; }
+    if (m.defeated) { m.beam = null; m.moveK = 1; return; }
+    const cx = m.x, cy = m.y - m.h * 0.5;
+    m.moveK = 0.06; m.facing = b.f;
+    m.punchCd = Math.max(m.punchCd, 0.1);
+    if (b.st === 'charge') {
+      b.t += dt;
+      b.aim = clamp(b.aim + ((Input.held('down') ? 1 : 0) - (Input.held('up') ? 1 : 0)) * 70 * dt, -45, 45);
+      if (chance(dt * 60)) {
+        const a = rand(0, Math.PI * 2), d = rand(30, 55);
+        FX.add({ x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d, vx: -Math.cos(a) * d * 2.2, vy: -Math.sin(a) * d * 2.2, grav: 0,
+          life: 0.35, size: rand(2, 3.4), color: pick(['#ff4a5a', '#ffd5d8', '#fff']), ground: false });
+      }
+      game.shake = Math.max(game.shake, 0.6 + b.t * 1.5);
+      if (b.t >= b.chargeT) {
+        b.st = 'fire'; b.ft = 0; b.by = cy + b.aim; b.once = new Set();
+        const f = b.f, y0 = b.by;
+        for (let d = 10; ; d += 10) {
+          const x = cx + f * d; if (x < -10 || x > W + 10) break;
+          for (const dy of [-12, 0, 12]) game.resolveHit(m, [{ x, y: y0 + dy }], 12, 2.5, b.once);
+          if (d % 80 === 0) { FX.spark(x, y0, 3, '#ffd5d8'); FX.add({ x, y: y0 + rand(-6, 6), vx: rand(-20, 20), vy: rand(-60, 60), grav: 0, life: rand(0.2, 0.4), size: rand(2, 4), color: '#ff4a5a', ground: false }); }
+        }
+        FX.ring(cx, y0, 90, '#ffffff', 0.4);
+        FX.ring(cx + f * 40, y0, 60, '#ff4a5a', 0.5);
+        game.shake = Math.max(game.shake, 14);
+        Sfx.play('boom');
+      }
+    } else {
+      b.ft += dt;
+      game.shake = Math.max(game.shake, 6);
+      if (chance(dt * 40)) {
+        const x = cx + b.f * rand(20, W);
+        FX.add({ x, y: b.by + rand(-8, 8), vx: rand(-30, 30), vy: rand(-70, 70), grav: 0, life: rand(0.2, 0.4), size: rand(2, 4), color: pick(['#ffffff', '#ff4a5a']), ground: false });
+      }
+      if (b.ft >= b.fireT) { m.beam = null; m.moveK = 1; }
+    }
+  },
+  draw(ctx, p) {
+    const t = p.t, CH = p.charge || 0, BM = p.beam || 0;
+    const ease = CH * CH * (3 - 2 * CH);
+    const open = clamp(Math.max(ease, BM > 0 ? 1 : 0, punchExt(p.punch) * 0.75, p.eat ? 0.6 : 0, 0.05 + 0.04 * Math.sin(t * 1.7)), 0, 1);
+    const cy = -30, th = t * (0.5 + open * 0.6), tilt = 0.32, ct = Math.cos(tilt), st = Math.sin(tilt);
+    const pulse = 0.5 + 0.5 * Math.sin(t * (3 + CH * 14));
+    const coreR = 4.5 + pulse * 1.5 + ease * 5 + BM * 4;
+    const bob = Math.sin(t * 1.9) * 3 + (p.walk ? Math.sin(p.walkPhase) * 2 : 0);
+    ctx.save(); ctx.translate(0, bob);
+    // plates of a five-sided double pyramid, pushed out along their own direction as it opens
+    const Rr = 17, A = 26, eq = [];
+    for (let k = 0; k < 5; k++) { const a = th + k * Math.PI * 2 / 5; eq.push([Math.cos(a) * Rr, 0, Math.sin(a) * Rr]); }
+    const T = [0, -A, 0], Bt = [0, A, 0], plates = [];
+    for (let k = 0; k < 5; k++) { plates.push([T, eq[k], eq[(k + 1) % 5], k]); plates.push([Bt, eq[(k + 1) % 5], eq[k], k + 5]); }
+    const built = plates.map(([a, b, c, id]) => {
+      const cen = [(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3, (a[2] + b[2] + c[2]) / 3];
+      const push = open * 0.95, sc = 1 - 0.22 * open;
+      const pts = [a, b, c].map(v => {
+        let x = cen[0] + (v[0] - cen[0]) * sc + cen[0] * push, y = cen[1] + (v[1] - cen[1]) * sc + cen[1] * push, z = cen[2] + (v[2] - cen[2]) * sc + cen[2] * push;
+        return [x, y * ct - z * st, y * st + z * ct];
+      });
+      const ux = pts[1][0] - pts[0][0], uy = pts[1][1] - pts[0][1], uz = pts[1][2] - pts[0][2];
+      const vx = pts[2][0] - pts[0][0], vy = pts[2][1] - pts[0][1], vz = pts[2][2] - pts[0][2];
+      let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+      const nl = Math.hypot(nx, ny, nz) || 1;
+      const lit = Math.abs((nx * -0.4 + ny * -0.6 + nz * 0.7) / nl);
+      const z = (pts[0][2] + pts[1][2] + pts[2][2]) / 3;
+      return { pts, z, lit, id };
+    }).sort((a, b) => a.z - b.z);
+    const plate = pl => {
+      const hue = (310 + pl.id * 37 + pl.lit * 80 + t * 12) % 360;
+      ctx.fillStyle = `hsl(${hue},${34 + pl.lit * 14}%,${66 + pl.lit * 24}%)`;
+      ctx.strokeStyle = '#8d8896'; ctx.lineWidth = 1.2; ctx.lineJoin = 'round';
+      ctx.beginPath(); pl.pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.beginPath();
+      ctx.moveTo(pl.pts[0][0], pl.pts[0][1]); ctx.lineTo((pl.pts[0][0] + pl.pts[1][0]) / 2, (pl.pts[0][1] + pl.pts[1][1]) / 2);
+      ctx.lineTo((pl.pts[0][0] + pl.pts[2][0]) / 2, (pl.pts[0][1] + pl.pts[2][1]) / 2); ctx.closePath(); ctx.fill();
+    };
+    ctx.save(); ctx.translate(0, cy);
+    // slow drifting motes
+    ctx.fillStyle = 'rgba(255,214,220,0.6)';
+    for (let i = 0; i < 4; i++) { const a = t * 0.7 + i * 1.57, r = 30 + Math.sin(t + i) * 3; ctx.beginPath(); ctx.arc(Math.cos(a) * r, Math.sin(a * 1.3) * 22, 1.2, 0, Math.PI * 2); ctx.fill(); }
+    // pale feathered wings: folded tight while idle, spread wide while charging
+    const spread = Math.max(ease, BM > 0 ? 1 : 0, open * 0.25);
+    for (let row = 0; row < 2; row++) for (let sd = -1; sd <= 1; sd += 2) for (let i = 0; i < 3; i++) {
+      const base = row ? Math.PI / 2 : -Math.PI / 2, ang = base + sd * (0.22 + i * 0.1 + spread * (0.55 + i * 0.5));
+      const d = (row ? 20 : 24) + i * 3 + spread * 9, fl = (row ? 11 : 15) + i * 4 + spread * 6;
+      ell(ctx, Math.cos(ang) * d, Math.sin(ang) * d, fl, 3, i % 2 ? '#e9e2ee' : '#f6f2f7', ang);
+    }
+    built.filter(pl => pl.z < 0).forEach(plate);
+    // the core
+    const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, coreR * 2.6);
+    cg.addColorStop(0, 'rgba(255,255,255,1)'); cg.addColorStop(0.25, 'rgba(255,60,70,0.95)'); cg.addColorStop(1, 'rgba(255,30,50,0)');
+    ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(0, 0, coreR * 2.6, 0, Math.PI * 2); ctx.fill();
+    ell(ctx, 0, 0, coreR, coreR, '#ff2a3a'); ell(ctx, 0, 0, coreR * 0.45, coreR * 0.45, '#ffe8ea');
+    built.filter(pl => pl.z >= 0).forEach(plate);
+    // glow that leaks through the plates
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const lg = ctx.createRadialGradient(0, 0, 0, 0, 0, 20 + open * 14);
+    lg.addColorStop(0, `rgba(255,70,80,${0.3 + 0.25 * pulse + ease * 0.4})`); lg.addColorStop(1, 'rgba(255,40,60,0)');
+    ctx.fillStyle = lg; ctx.beginPath(); ctx.arc(0, 0, 34, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    // interlocking gold-and-pearl wheels, rims studded with watchful eyes
+    const ayt = p.aimDy || 0;
+    for (let i = 0; i < 3; i++) {
+      const R = 24 + i * 5 + open * 5, rot = t * (0.3 + 0.2 * i) * (i % 2 ? -1 : 1) + i * 1.05;
+      const ty = Math.max(0.22, Math.abs(Math.cos(t * 0.5 + i * 1.3))), cr = Math.cos(rot), sr = Math.sin(rot);
+      ctx.save(); ctx.rotate(rot);
+      ctx.strokeStyle = '#b8902f'; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(0, 0, R, R * ty, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = '#f3e3a8'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 0, R, R * ty, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = '#fbf7ef'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.ellipse(0, 0, R, R * ty, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+      for (let k = 0; k < 6; k++) {
+        const a = t * (0.6 + 0.2 * i) * (i % 2 ? 1 : -1) + k * Math.PI / 3 + i;
+        const lx = Math.cos(a) * R, ly = Math.sin(a) * R * ty;
+        const ex = lx * cr - ly * sr, ey = lx * sr + ly * cr;
+        const ph = Math.sin(t * 0.8 + k * 2.3 + i * 1.7), blink = ph > 0.93 ? 1 - (ph - 0.93) / 0.07 * 0.9 : 1;
+        const rx = 3.4, ry = 3 * (0.3 + 0.7 * Math.max(ease, BM > 0 ? 1 : 0, 0.35)) * blink;
+        ell(ctx, ex, ey, rx, Math.max(0.4, ry), '#fffdf6');
+        const gx = 1.3, gy = Math.max(-1.2, Math.min(1.2, (ayt - ey) / 40));
+        ell(ctx, ex + gx, ey + gy * ry / 3, 1.7, Math.max(0.4, Math.min(1.7, ry * 0.7)), '#d4202f');
+        ell(ctx, ex + gx + 0.3, ey + gy * ry / 3, 0.7, Math.max(0.3, Math.min(0.7, ry * 0.4)), '#2a0508');
+      }
+    }
+    // needle jab from the core to the fist point
+    if (p.punch > 0 && p.hand) {
+      const [hx, hy] = handTarget(p, 10, 0), ey = hy + 30;
+      ctx.lineCap = 'round';
+      [['rgba(255,50,70,0.45)', 6], ['#ff4a5a', 2.6], ['#ffffff', 1]].forEach(([c, w]) => { ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(hx, ey); ctx.stroke(); });
+      ell(ctx, hx, ey, 4, 4, 'rgba(255,230,232,0.9)');
+    }
+    // targeting line while charging
+    if (CH > 0) {
+      const ay = (p.aimDy || 0), L = p.beamLen || 900;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = `rgba(255,60,80,${0.25 + 0.5 * CH})`; ctx.lineWidth = 1;
+      ctx.setLineDash([6, 5]); ctx.lineDashOffset = -t * 40;
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(10, ay); ctx.lineTo(L, ay); ctx.stroke();
+      ctx.setLineDash([]);
+      ell(ctx, 0, ay, 2 + CH * 2, 2 + CH * 2, 'rgba(255,230,232,0.9)');
+    }
+    // the beam
+    if (BM > 0) {
+      const by = p.beamDy + 30, L = p.beamLen || 900, w = 6 + 26 * BM;
+      ctx.lineCap = 'butt';
+      [['rgba(255,40,60,0.28)', w * 1.8], ['rgba(255,60,80,0.6)', w], ['#ffc2c8', w * 0.45], ['#ffffff', w * 0.18]].forEach(([c, lw]) => {
+        ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(0, by); ctx.lineTo(L, by); ctx.stroke();
+      });
+      ell(ctx, 0, by, w * 0.9, w * 0.9, 'rgba(255,255,255,0.85)');
+    }
+    ctx.restore();
+    ctx.restore();
+  },
+  drawRevert(ctx, t) {  // a lone four-sided die, rolling away, one pip short of a full set
+    const sp = t * 7;
+    ctx.save(); ctx.translate(0, -6 - Math.abs(Math.sin(sp)) * 2); ctx.rotate(sp);
+    ctx.fillStyle = '#f1e9f3'; ctx.strokeStyle = '#8d8896'; ctx.lineWidth = 1.2; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(0, -7); ctx.lineTo(7, 5); ctx.lineTo(-7, 5); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#cdbfd3'; ctx.beginPath(); ctx.moveTo(0, -7); ctx.lineTo(1, 5); ctx.stroke();
+    ell(ctx, 0, 0, 1.6, 1.6, '#ff2a3a');
     ctx.restore();
   },
 });
