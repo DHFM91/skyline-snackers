@@ -940,7 +940,7 @@ function drawStatesmanRig(ctx, p) {
   for (const k in ST_PARTS) if (!ST_PARTS[k].complete || !ST_PARTS[k].naturalWidth) return;
   const t = p.t || 0, IW = 309, IH = 420, K = 104 / IH;
   // pivots (image px): elbow of the reaching arm, neck, hips
-  const ELB = [240, 169], NECK = [172, 104], HIPL = [81, 247], HIPR = [211, 247];
+  const ELB = [219, 182], NECK = [172, 104], HIPL = [81, 247], HIPR = [211, 247];
   let bodyRot = 0, bodyDY = 0, headRot = Math.sin(t * 1.7) * 0.03, armRot = Math.sin(t * 2.3) * 0.05, armDX = 0, armDY = 0;
   let armSX = 1, legL = 0, legR = 0, sy = 1 + Math.sin(t * 2.4) * 0.012;
   if (p.walk) {
@@ -950,17 +950,17 @@ function drawStatesmanRig(ctx, p) {
   if (p.air) { legL = -0.14; legR = 0.14; armRot -= 0.35; }
   if (p.climb) {
     const k = Math.sin(p.climbPhase || 0);
-    bodyRot = -0.14; armRot = -1.35 + k * 0.35; armDY = -10; legL = 0.12 + k * 0.12; legR = -0.05 - k * 0.12; bodyDY = k * 8; headRot = -0.08;
+    bodyRot = -0.14; armRot = -1.2 + k * 0.3; legL = 0.12 + k * 0.12; legR = -0.05 - k * 0.12; bodyDY = k * 8; headRot = -0.08;
   }
   if (p.punch) {
     const k = Math.sin(Math.min(1, p.punch) * Math.PI);
     const dir = p.punchDir || 'side';
-    if (dir === 'up') { armRot += -1.15 * k; armDY -= 30 * k; bodyRot -= 0.06 * k; }
-    else if (dir === 'down') { armRot += 0.9 * k; armDY += 20 * k; bodyRot += 0.08 * k; }
-    else { armRot += -0.12 * k; armSX = 1 + 0.55 * k; armDX += 8 * k; bodyRot += 0.07 * k; }
+    if (dir === 'up') { armRot += -1.05 * k; armSX = 1 + 0.15 * k; bodyRot -= 0.06 * k; }
+    else if (dir === 'down') { armRot += 0.75 * k; armSX = 1 + 0.15 * k; bodyRot += 0.08 * k; }
+    else { armRot += -0.1 * k; armSX = 1 + 0.45 * k; bodyRot += 0.07 * k; }
     headRot += 0.05 * k;
   }
-  if (p.eat) { const k = Math.abs(Math.sin(t * 20)); armRot = -2.05; armDX = -20; armDY = -15; headRot = 0.06 + k * 0.06; }
+  if (p.eat) { const k = Math.abs(Math.sin(t * 20)); armRot = -1.7; armSX = 0.9; headRot = 0.06 + k * 0.06; }
   if (p.dash) bodyRot += 0.1;
   const img = ST_PARTS;
   const piece = (im, px, py, rot, dx = 0, dy = 0, sx = 1) => {
