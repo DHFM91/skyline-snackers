@@ -684,7 +684,7 @@ const Game = {
       d.draw(ctx, demoPose(on ? t : t * 0.3 + i, on ? { walk: true, walkPhase: t * 9 } : {}));
       ctx.restore();
     });
-    this.text(T('ARROWS TO CHOOSE   ·   ENTER TO STOMP', 'TAP A MONSTER   ·   TAP IT AGAIN TO STOMP'), W / 2, H - 14, 12, '#fff', 'center', 3);
+    this.text(T('ARROWS OR CLICK TO CHOOSE   ·   ENTER OR CLICK AGAIN TO STOMP', 'TAP A MONSTER   ·   TAP IT AGAIN TO STOMP'), W / 2, H - 14, 12, '#fff', 'center', 3);
   },
 };
 

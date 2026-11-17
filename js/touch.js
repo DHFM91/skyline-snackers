@@ -56,9 +56,16 @@ const TouchPad = {
 
     // --- taps on the game canvas (menus, resume) ---
     canvas.addEventListener('pointerdown', e => {
-      if (!IS_TOUCH) return;
+      // Mouse clicks work on the monster select screen too (click to pick, click again to stomp).
+      if (!IS_TOUCH && !(Game.state === 'select' && e.button === 0)) return;
       const r = canvas.getBoundingClientRect();
       Game.onTap((e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H);
+    });
+    canvas.addEventListener('pointermove', e => {
+      if (IS_TOUCH) return;
+      const r = canvas.getBoundingClientRect();
+      const over = Game.state === 'select' && Game.cardAt((e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H) >= 0;
+      canvas.style.cursor = over ? 'pointer' : '';
     });
 
     // Phone keyboard for initials: tapping the initials screen focuses a hidden text field.

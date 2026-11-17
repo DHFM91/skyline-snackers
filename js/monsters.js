@@ -932,8 +932,56 @@ registerMonster({
   },
 });
 
-/* ---------- 7. ELDER STATESMAN (sprite: the owner's own art in art/elder-statesman.png) ---------- */
-const STATESMAN_IMG = typeof Image !== 'undefined' ? Object.assign(new Image(), { src: 'art/elder-statesman.png' }) : null;
+/* ---------- 7. ELDER STATESMAN (sprite: the owner's own art, art/statesman/*.png) ---------- */
+// The owner's sprite art, cut into layered parts (art/statesman/*.png) and posed with simple joints.
+const ST_PARTS = {};
+if (typeof Image !== 'undefined') for (const k of ['legL', 'legR', 'base', 'head', 'arm']) { const im = new Image(); im.src = 'art/statesman/' + k + '.png'; ST_PARTS[k] = im; }
+function drawStatesmanRig(ctx, p) {
+  for (const k in ST_PARTS) if (!ST_PARTS[k].complete || !ST_PARTS[k].naturalWidth) return;
+  const t = p.t || 0, IW = 309, IH = 420, K = 104 / IH;
+  // pivots (image px): elbow of the reaching arm, neck, hips
+  const ELB = [240, 169], NECK = [172, 104], HIPL = [81, 247], HIPR = [211, 247];
+  let bodyRot = 0, bodyDY = 0, headRot = Math.sin(t * 1.7) * 0.03, armRot = Math.sin(t * 2.3) * 0.05, armDX = 0, armDY = 0;
+  let armSX = 1, legL = 0, legR = 0, sy = 1 + Math.sin(t * 2.4) * 0.012;
+  if (p.walk) {
+    const k = Math.sin(p.walkPhase || 0);
+    legL = k * 0.16; legR = -k * 0.16; bodyDY = -Math.abs(k) * 14; bodyRot = k * 0.03; headRot += k * 0.04; armRot += k * 0.12;
+  }
+  if (p.air) { legL = -0.14; legR = 0.14; armRot -= 0.35; }
+  if (p.climb) {
+    const k = Math.sin(p.climbPhase || 0);
+    bodyRot = -0.14; armRot = -1.35 + k * 0.35; armDY = -10; legL = 0.12 + k * 0.12; legR = -0.05 - k * 0.12; bodyDY = k * 8; headRot = -0.08;
+  }
+  if (p.punch) {
+    const k = Math.sin(Math.min(1, p.punch) * Math.PI);
+    const dir = p.punchDir || 'side';
+    if (dir === 'up') { armRot += -1.15 * k; armDY -= 30 * k; bodyRot -= 0.06 * k; }
+    else if (dir === 'down') { armRot += 0.9 * k; armDY += 20 * k; bodyRot += 0.08 * k; }
+    else { armRot += -0.12 * k; armSX = 1 + 0.55 * k; armDX += 8 * k; bodyRot += 0.07 * k; }
+    headRot += 0.05 * k;
+  }
+  if (p.eat) { const k = Math.abs(Math.sin(t * 20)); armRot = -2.05; armDX = -20; armDY = -15; headRot = 0.06 + k * 0.06; }
+  if (p.dash) bodyRot += 0.1;
+  const img = ST_PARTS;
+  const piece = (im, px, py, rot, dx = 0, dy = 0, sx = 1) => {
+    ctx.save(); ctx.translate(px + dx, py + dy); ctx.rotate(rot); ctx.scale(sx, 1); ctx.drawImage(im, -px, -py); ctx.restore();
+  };
+  ctx.save();
+  ctx.scale(K, K);
+  ctx.translate(-IW / 2, -IH);
+  const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true;
+  // legs pivot at the hips; the body sits on top of them
+  piece(img.legL, HIPL[0], HIPL[1], legL, 0, bodyDY * 0.4);
+  piece(img.legR, HIPR[0], HIPR[1], legR, 0, bodyDY * 0.4);
+  ctx.save();
+  ctx.translate(IW / 2, IH * 0.6 + bodyDY); ctx.rotate(bodyRot); ctx.scale(1, sy); ctx.translate(-IW / 2, -IH * 0.6);
+  ctx.drawImage(img.base, 0, 0);
+  piece(img.head, NECK[0], NECK[1], headRot);
+  piece(img.arm, ELB[0], ELB[1], armRot, armDX, armDY, armSX);
+  ctx.restore();
+  ctx.imageSmoothingEnabled = sm;
+  ctx.restore();
+}
 registerMonster({
   id: 'statesman', name: 'ELDER STATESMAN', tagline: 'Has held this seat since before the seat was invented.',
   homage: 'The permanent ruling class',
@@ -989,30 +1037,7 @@ registerMonster({
     game.shake = Math.max(game.shake, 6);
     Sfx.play('roar');
   },
-  draw(ctx, p) {
-    // The owner's own sprite art (art/elder-statesman.png), animated with simple transforms.
-    const img = STATESMAN_IMG;
-    if (!img || !img.complete || !img.naturalWidth) return;
-    const t = p.t || 0, H = 104, Wd = H * img.naturalWidth / img.naturalHeight;
-    let dx = 0, dy = 0, rot = 0, sx = 1, sy = 1;
-    if (p.climb) { rot = -0.12; dy = Math.sin(p.climbPhase || 0) * 3; }
-    else if (p.walk) { const k = Math.sin(p.walkPhase || 0); dy = -Math.abs(k) * 4; rot = k * 0.05; }
-    else if (!p.air) sy = 1 + Math.sin(t * 2.4) * 0.015;   // breathing
-    if (p.air) { sy = 1.04; sx = 0.97; }
-    if (p.punch) {
-      const k = Math.sin(Math.min(1, p.punch) * Math.PI);
-      dx += k * 10;
-      rot += k * 0.12 * (p.punchDir === 'up' ? -1 : 1);
-      if (p.punchDir === 'down') dy += k * 4;
-    }
-    if (p.eat) { dy -= Math.abs(Math.sin(t * 20)) * 2; sx *= 1.02; }
-    if (p.dash) rot += 0.1;
-    ctx.save(); ctx.translate(dx, dy); ctx.rotate(rot); ctx.scale(sx, sy);
-    const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(img, -Wd * 0.5, -H, Wd, H);
-    ctx.imageSmoothingEnabled = sm;
-    ctx.restore();
-  },
+  draw(ctx, p) { drawStatesmanRig(ctx, p); },
   drawRevert(ctx, t) {  // a frail old man, hobbling away behind his walker
     const st = Math.sin(t * 8), hop = Math.abs(st) * 1.2;
     ctx.save(); ctx.translate(0, -hop);

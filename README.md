@@ -81,7 +81,7 @@ LEGAL_NOTES.md    IP reasoning, and the checklist to run before adding a homage
 ```
 
 All art is drawn in code (canvas shapes) and every sound is synthesized, with one exception: the
-Elder Statesman sprite (`art/elder-statesman.png`) is the owner's own art. Nothing is borrowed.
+Elder Statesman sprite (`art/statesman/`) is the owner's own art. Nothing is borrowed.
 
 ## Adding a monster
 
