@@ -677,8 +677,8 @@ registerMonster({
       for (let y = top + 10; y <= GROUND; y += 14) game.resolveHit(m, [{ x, y }], 16, 2, sm.once);
       FX.spark(x, GROUND - 8, 8, '#e9e2ff');
       FX.ring(x, GROUND - 4, 50, '#cdb8ff', 0.3);
-      FX.boom(x, GROUND - 12, 0.5);
-      FX.dust(x, GROUND - 6, 2, '#8d84a3', 14);
+      FX.spark(x, GROUND - 14, 10, '#fff3b0');
+      FX.dust(x, GROUND - 6, 2, '#d8d2e6', 14);
       game.shake = Math.max(game.shake, 5);
       Sfx.play('boom');
     }
@@ -701,7 +701,6 @@ registerMonster({
     const puffs = [[-30, -22, 15, B2], [-16, -38, 17, B2], [4, -44, 19, B1], [24, -38, 16, B1], [34, -22, 14, B1], [22, -12, 16, B2], [-2, -10, 18, B2], [-20, -10, 15, B2], [0, -26, 26, B1]];
     puffs.forEach(([x, y, r, c], i) => ell(ctx, x + Math.sin(t * 1.6 + i) * 1.2, y + Math.cos(t * 1.3 + i * 2) * 1, r, r * 0.85, c));
     ctx.save(); ctx.globalAlpha = 0.5; ell(ctx, -6, -44, 13, 7, B3); ell(ctx, 20, -42, 9, 5, B3); ctx.restore();
-    ell(ctx, 0, -8, 30, 6, DK);
     // internal lightning flicker
     if (flick > 0) {
       ctx.save(); ctx.globalAlpha = 0.25 * flick; ell(ctx, 0, -26, 30, 20, '#e9e2ff'); ctx.restore();
