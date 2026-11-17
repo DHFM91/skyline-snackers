@@ -54,7 +54,7 @@ class Monster {
     this.walkPhase = 0; this.climbPhase = 0; this.eatT = 0; this.glide = false;
     this.defeated = false; this.defT = 0; this.onFloor = false; this.reverted = false; this.reported = false;
     this.dashT = 0; this.dashVX = 0; this.dashVY = 0; this.dashSet = null;
-    this.smite = null; this.beam = null; this.moveK = 1; this.slam = false; this.airTop = 0; this.slamCd = 0;
+    this.smite = null; this.beam = null; this.moveK = 1; this.slam = false; this.airTop = 0; this.slamCd = 0; this.landT = 0;
     this.entering = true;
   }
   box() { return { x: this.x - this.w / 2, y: this.y - this.h, w: this.w, h: this.h }; }
@@ -62,22 +62,22 @@ class Monster {
 
   update(dt, game, control) {
     this.t += dt;
-    this.punchCd -= dt; this.punchT -= dt; this.hurtT -= dt; this.invuln -= dt; this.specialCd -= dt; this.eatT -= dt; this.slamCd -= dt;
+    this.punchCd -= dt; this.punchT -= dt; this.hurtT -= dt; this.invuln -= dt; this.specialCd -= dt; this.eatT -= dt; this.slamCd -= dt; this.landT -= dt;
     if (this.defeated) { this.updateDefeat(dt, game); return; }
     if (this.def.tick) this.def.tick(this, dt, game);
     const C = control && !this.entering;
     const L = C && Input.held('left'), R = C && Input.held('right'), U = C && Input.held('up'), D = C && Input.held('down');
-    const J = C && Input.held('jump'), Jhit = C && Input.hit('jump');
+    const J = C && Input.held('jump'), Jhit = C && Input.hit('jump'), Dhit = C && Input.hit('down');
     if (this.dashT > 0) this.updateDash(dt, game);
     else if (this.s.flies) this.updateFly(dt, game, L, R, U, D);
-    else this.updateWalk(dt, game, L, R, U, D, J, Jhit);
+    else this.updateWalk(dt, game, L, R, U, D, J, Jhit, Dhit);
     if (C && Input.hit('punch') && this.punchCd <= 0 && this.dashT <= 0) this.punch(game, U, D);
     if (C && Input.hit('special') && this.specialCd <= 0 && this.def.special) { this.def.special(this, game); this.specialCd = this.s.specialCd; }
     this.x = clamp(this.x, 16, W - 16);
     if (this.hp <= 0 && game.state === 'play') this.defeat(game);
   }
 
-  updateWalk(dt, game, L, R, U, D, J, Jhit) {
+  updateWalk(dt, game, L, R, U, D, J, Jhit, Dhit) {
     const s = this.s, dir = (R ? 1 : 0) - (L ? 1 : 0);
     if (this.state === 'ground' || this.state === 'roof') {
       this.vx = dir * s.speed; if (dir) { this.facing = dir; this.walkPhase += dt * s.speed * 0.085; }
@@ -86,7 +86,7 @@ class Monster {
         const b = this.roofB;
         if (!b || !b.alive || this.x < b.x - 4 || this.x > b.x + b.w + 4) { this.state = 'air'; this.vy = 0; this.roofB = null; this.airTop = this.y; return; }
         this.y = b.top();
-        if (D) { this.startClimb(b); this.y = b.top() + this.h * 0.8; return; }
+        if (Dhit && this.landT <= 0) { this.startClimb(b); this.y = b.top() + this.h * 0.8; return; }
       }
       if (U && this.state === 'ground') { const b = game.faceBuilding(this.x); if (b) { this.startClimb(b); return; } }
       if (Jhit) { this.vy = -s.jump; this.state = 'air'; this.roofB = null; this.airTop = this.y; Sfx.play('jump'); }
@@ -110,7 +110,7 @@ class Monster {
       const prevY = this.y;
       this.airTop = Math.min(this.airTop, this.y);
       // Roof Slam: press Down in the air to drop hard
-      if (D && !this.slam && !this.entering) { this.slam = true; this.vy = Math.max(this.vy, 520); Sfx.play('dash'); }
+      if (Dhit && !this.slam && !this.entering && this.slamCd <= 0) { this.slam = true; this.vy = Math.max(this.vy, 520); Sfx.play('dash'); }
       this.vy += GRAV * (this.slam ? 2.2 : 1) * dt;
       this.glide = !!(s.glide && J && this.vy > 0);
       if (this.glide) this.vy = Math.min(this.vy, 95);
@@ -122,11 +122,17 @@ class Monster {
           if (prevY <= top + 1 && this.y >= top && this.x >= b.x - 2 && this.x <= b.x + b.w + 2) {
             const fall = top - this.airTop, slam = this.slam;
             this.land(game, 'roof', b, top);
-            if (slam) game.roofSlam(this, b, clamp((fall - 60) / 170, 0.25, 1.2));
+            if (slam) { game.roofSlam(this, b, clamp((fall - 60) / 170, 0.25, 1.2)); this.landT = 0.4; this.slamCd = 0.35; }
             return;
           }
         }
-        if (this.y >= GROUND) { const slam = this.slam; this.land(game, 'ground', null, GROUND); if (slam) game.groundSlam(this); return; }
+        if (this.y >= GROUND) {
+          const slam = this.slam, fall = GROUND - this.airTop;
+          this.land(game, 'ground', null, GROUND);
+          // street shockwave needs a real drop (off a roof or wall), not a hop
+          if (slam && fall > 150) { game.groundSlam(this); this.slamCd = 0.8; }
+          return;
+        }
       }
       if (U) { const b = game.faceBuilding(this.x); if (b && this.y > b.top() + this.h * 0.8) this.startClimb(b); }
     }
