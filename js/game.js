@@ -20,6 +20,9 @@ addEventListener('resize', resize); resize();
 const TITLE = 'SKYLINE SNACKERS';
 const SUBTITLE = 'AN ELDRITCH WORLD TOUR';
 const START_LIVES = 1;   // lives per game (and per continue)
+const PUNCH_CENTER = 0.75;  // punch damage to the window under the fist (x monster dmg)
+const PUNCH_SPLASH = 0.5;   // punch damage to the 4 windows around it (plus-shaped cross)
+const PUNCH_AOE_R  = 2.2;   // blast radius vs tanks/helis, as a multiple of the monster's hitR
 const T = (keys, touch) => (IS_TOUCH ? touch : keys);   // prompt text for keyboard vs touch
 
 function loadHi() { try { return parseInt(localStorage.getItem('skyline-snackers-hi') || '0', 10) || 0; } catch (e) { return 0; } }
@@ -162,8 +165,58 @@ const Game = {
     this.shots.push(new Shot(x, y, Math.cos(a) * sp, Math.sin(a) * sp, kind));
     if (kind === 'bullet') Sfx.play('shoot');
   },
+  // Regular punches: splash damage. Vehicles anywhere in the blast take a hit, and the struck window
+  // plus its 4 neighbours (a plus-shaped cross) take reduced damage. Eating still needs a direct hit:
+  // the window right under the fist, or a walker the fist actually touches.
+  punchHit(m, pts, r, dmg) {
+    const R = r * PUNCH_AOE_R;
+    let hit = false;
+    const inBlast = box => pts.some(p => circleRect(p.x, p.y, R, box));
+    for (const h of this.helis) {
+      if (h.dead || h.falling || !inBlast(h.box())) continue;
+      hit = true;
+      h.hp -= 1; h.flash = 0.1; FX.debris(h.x, h.y, 6, ['#4f5d3a', '#333', '#9fd0ee']);
+      if (h.hp <= 0) { h.falling = true; h.vy = -60; this.addScore(800, h.x, h.y - 20); FX.boom(h.x, h.y, 0.6); }
+    }
+    for (const tk of this.tanks) {
+      if (tk.dead || !inBlast(tk.box())) continue;
+      hit = true;
+      tk.hp -= dmg >= 2 ? 1.5 : 1; tk.flash = 0.1; FX.debris(tk.x, tk.y - 12, 6, ['#5b6b34', '#333']);
+      if (tk.hp <= 0) { tk.dead = true; FX.boom(tk.x, tk.y - 12, 1.2); Sfx.play('boom'); this.addScore(500, tk.x, tk.y - 30); this.shake = 8; }
+    }
+    if (hit) { Sfx.play('punch'); this.shake = Math.max(this.shake, 3); }
+    for (const wk of this.walkers) {
+      if (wk.dead || !pts.some(p => circleRect(p.x, p.y, r + 4, wk.box()))) continue;
+      wk.dead = true; this.eat(m, wk.kind === 'soldier' ? 'soldier' : 'person', wk.x, wk.y - 12);
+      hit = true; break;
+    }
+    // building: find the window under the fist (holes count, so punching into a hole still splashes)
+    for (const p of pts) {
+      let b = null, hc = null;
+      for (const bb of this.buildings) { hc = bb.cellAt(p.x, p.y); if (hc) { b = bb; break; } }
+      if (!hc) continue;
+      hit = true;
+      const cell = hc.cell;
+      if (cell.hp > 0 && cell.hp <= 1 && cell.occ) {
+        const c = b.cellCenter(hc.f, hc.c), kind = cell.occ; cell.occ = null;
+        this.eat(m, kind, c.x, c.y);
+      } else if (cell.hp > 0) b.hit(hc.f, hc.c, dmg * PUNCH_CENTER, this);
+      for (const [df, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        if (!b.alive) break;
+        const f = hc.f + df, c = hc.c + dc;
+        if (f < 0 || f >= b.floors || c < 0 || c >= b.cols) continue;
+        const n = b.cells[f][c];
+        if (n.hp <= 0 || (n.hp <= 1 && n.occ)) continue;   // splash never wastes an exposed snack
+        b.hit(f, c, dmg * PUNCH_SPLASH, this);
+      }
+      this.shake = Math.max(this.shake, 2);
+      break;
+    }
+    return hit;
+  },
   // pts: candidate hit points (nearest first). once: a Set to prevent repeat hits (dash attacks).
   resolveHit(m, pts, r, dmg, once) {
+    if (!once) return this.punchHit(m, pts, r, dmg);
     for (const p of pts) {
       for (const h of this.helis) {
         if (h.dead || h.falling || (once && once.has(h)) || !circleRect(p.x, p.y, r, h.box())) continue;

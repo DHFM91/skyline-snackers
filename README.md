@@ -31,7 +31,13 @@ biggest view; in portrait the game sits on top with the controls underneath.
 - Break windows (or knock them in) to grab whoever is inside. People and soldiers
   heal you. **Drumsticks** heal a lot. **Money bags** are worth points. **Toasters**
   shock you, so don't eat them.
-- A building comes down when about a third of its windows are holes, or when a whole floor is gone.
+- Punches splash: the window you hit plus the four around it (a plus-shaped cross) take damage,
+  and any tank or helicopter in the blast gets hit too. To eat someone or grab a power-up you
+  still have to punch that exact window (or that exact person on the street).
+- Each building has a damage meter above its roof. It comes down once about 40% of its total
+  window damage is done (`COLLAPSE_AT` in `js/world.js`). No single floor topples it, so working the
+  whole face, climbing included, is the fast way through a city. Punch splash values are
+  `PUNCH_CENTER`, `PUNCH_SPLASH` and `PUNCH_AOE_R` in `js/game.js`.
 - Level the whole street to "crunch" the city. You get a health bonus and a speed bonus.
 - The army escalates over time: rifle squads first, then helicopters, then tanks.
   Soldiers also shoot from windows.
@@ -53,6 +59,7 @@ biggest view; in portrait the game sits on top with the controls underneath.
 | **Cthulhu** | Climbing | Madness Roar: stuns the army, makes the crowd faint | Toughest, hits hardest. Hold Jump in the air to glide. |
 | **Lanky Hank** | Climbing | Blink: short teleport with brief invulnerability | Longest reach, fastest climber. |
 | **Chronomunch** | Flying | Time Chomp: a lunge that eats everything in its path | Never climbs. Fragile. |
+| **Generic Kaiju** | Climbing | Foam Blast: a frothy cone of suds that wrecks windows, vehicles and soldiers | A store-brand giant crab. Big punching claw, sturdy. Hard shell: takes 10% less damage. |
 
 ## Project layout
 

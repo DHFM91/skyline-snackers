@@ -492,3 +492,139 @@ registerMonster({
     ctx.restore();
   },
 });
+
+/* ---------- 4. GENERIC KAIJU (original parody of the stock giant-crab movie monster) ---------- */
+registerMonster({
+  id: 'generickaiju', name: 'GENERIC KAIJU', tagline: 'Same giant crab, none of the brand.',
+  homage: 'Every giant crab movie, ever',
+  move: 'CLIMBS', specialName: 'FOAM BLAST', specialDesc: 'A frothy cone of suds that wrecks windows, vehicles and soldiers',
+  passive: 'Hard shell: takes 10% less damage',
+  bars: { STR: 4, SPD: 2, REACH: 2, TOUGH: 4 },
+  stats: { w: 60, h: 88, speed: 115, climb: 84, jump: 600, dmg: 2, reach: 30, hitR: 24, punchCd: 0.32,
+    maxHp: 120, armor: 0.9, armY: 0.6, specialCd: 6 },
+  portraitY: 0.7,
+  special(m, game) {
+    const f = m.facing, mx = m.x + f * (m.w * 0.5 + 6), my = m.y - m.h * 0.5;
+    const once = new Set();
+    // sweep a short cone in front of the mouth, nearest points first
+    for (let d = 20; d <= 190; d += 14) {
+      for (let row = -1; row <= 1; row++) {
+        const px = mx + f * d, py = my + d * 0.1 + row * d * 0.2;
+        game.resolveHit(m, [{ x: px, y: py }], 12 + d * 0.05, 2, once);
+      }
+    }
+    for (let i = 0; i < 28; i++) {
+      const d = rand(10, 170);
+      FX.add({ x: mx + f * d * 0.3, y: my + rand(-5, 5), vx: f * (d * 2.2 + rand(60, 140)), vy: rand(-40, 30) + d * 0.25, grav: 0,
+        life: rand(0.4, 0.8), size: rand(5, 12), color: pick(['#ffffff', '#e6fbff', '#bfeaf0']), shape: 'puff', ground: false });
+    }
+    FX.spark(mx + f * 40, my, 6, '#e6fbff');
+    FX.ring(mx + f * 20, my, 60, '#bfeaf0', 0.4);
+    game.shake = Math.max(game.shake, 4);
+    m.punchT = 0.2; m.punchDir = 'side';
+    Sfx.play('dash');
+  },
+  draw(ctx, p) {
+    const t = p.t, S1 = '#b8402e', S2 = '#8a281c', S3 = '#e8742c', CR = '#f0dfc2', SP = '#3b2a26', LBL = '#f5f4ee', INK = '#111';
+    const sw = p.walk ? Math.sin(p.walkPhase) : 0;
+    const bob = p.walk ? Math.abs(Math.cos(p.walkPhase)) * 2.5 : Math.sin(t * 1.6) * 0.8;
+    // claw: palm plus two pincer fingers that open by openA radians
+    const claw = (x, y, s, ang, openA, col, hi) => {
+      ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+      ell(ctx, 0, 0, 9 * s, 7 * s, col);
+      ctx.save(); ctx.rotate(-openA * 0.5); ell(ctx, 10 * s, -2 * s, 9 * s, 3.4 * s, col); ell(ctx, 11 * s, -3 * s, 5 * s, 1 * s, hi); ctx.restore();
+      ctx.save(); ctx.rotate(openA * 0.5); ell(ctx, 10 * s, 2.4 * s, 9 * s, 3.2 * s, col); ctx.restore();
+      ctx.restore();
+    };
+    // a two-segment walking leg from the underside to a foot
+    const leg = (x0, fx, fy, col) => {
+      const kx = x0 + (fx - x0) * 0.55 - 5, ky = Math.min(-44, (-40 + fy) / 2 - 12);
+      limb(ctx, x0, -38, kx, ky, 4.5, col, 0);
+      limb(ctx, kx, ky, fx, fy, 3.8, col, 0);
+      ell(ctx, fx, fy - 1, 2.4, 1.6, SP);
+    };
+    ctx.save(); ctx.translate(0, -bob);
+    if (p.dash) ctx.rotate(0.1);
+    // far-side legs and small claw (behind the shell)
+    const legX = [-20, -8, 6, 18];
+    for (let i = 0; i < 4; i++) {
+      let fx, fy;
+      if (p.climb) { fx = 28 + (i % 2) * 3; fy = -26 - i * 11 + Math.sin(p.climbPhase + i * 1.7 + 1) * 5; }
+      else if (p.air) { fx = legX[i] * 1.5 - 4; fy = -12 + (i % 2) * 3; }
+      else { const ph = p.walkPhase + i * Math.PI + 1; fx = legX[i] * 1.35 + 4 + Math.sin(ph) * 9; fy = -Math.max(0, Math.cos(ph)) * 4; }
+      if (i % 2 === 0) leg(legX[i], fx, fy, S2);
+    }
+    const eatSnap = p.eat ? 0.45 + 0.4 * Math.sin(t * 32) : 0.15 + 0.06 * Math.sin(t * 2.3);
+    let sr = p.climb ? [20, -82 + Math.sin(p.climbPhase + 3) * 6] : p.eat ? [26, -48] : [24 - sw * 5, -34];
+    limb(ctx, 8, -52, sr[0], sr[1], 6, S2, -0.1);
+    claw(sr[0] + 2, sr[1] - 1, 0.7, p.eat ? -0.5 : -0.2, eatSnap, S2, S3);
+    // carapace
+    ell(ctx, 0, -50, 31, 24, S1);
+    ell(ctx, 0, -57, 27, 15, S3, 0);
+    ell(ctx, 0, -54, 27, 17, S1);
+    ctx.strokeStyle = S3; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, -52, 28, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
+    ctx.fillStyle = S2;
+    for (let i = 0; i < 5; i++) { const a = Math.PI * (1.08 + i * 0.2); ctx.beginPath(); ctx.arc(Math.cos(a) * 30, -50 + Math.sin(a) * 23, 3.4, 0, Math.PI * 2); ctx.fill(); }
+    // underside plate
+    ell(ctx, 6, -37, 22, 8, CR);
+    ctx.strokeStyle = '#cdb994'; ctx.lineWidth = 1;
+    for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(-8 + i * 7, -43); ctx.lineTo(-8 + i * 7, -32); ctx.stroke(); }
+    // barnacle speckles
+    ctx.fillStyle = SP;
+    [[-22, -52, 2], [-16, -64, 1.6], [-26, -44, 1.5], [18, -66, 1.4], [24, -56, 1.8], [-8, -70, 1.3]].forEach(([x, y, r]) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); });
+    // generic label panel with barcode
+    ctx.save(); ctx.translate(0, -52);
+    ctx.fillStyle = LBL; ctx.fillRect(-10, -14, 20, 28);
+    ctx.strokeStyle = INK; ctx.lineWidth = 0.8; ctx.strokeRect(-10, -14, 20, 28);
+    ctx.fillStyle = INK; ctx.font = 'bold 6px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('KAIJU', 0, -7);
+    ctx.fillRect(-8, -1, 16, 0.8);
+    for (let i = 0; i < 11; i++) ctx.fillRect(-7.5 + i * 1.4, 3, (i % 3 === 0) ? 1.1 : 0.6, 9);
+    ctx.restore();
+    // mouthparts
+    const mo = p.eat ? Math.abs(Math.sin(t * 28)) : 0.15 + 0.1 * Math.sin(t * 3);
+    ctx.strokeStyle = CR; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(27, -40); ctx.lineTo(33 + mo * 2, -43 - mo * 5); ctx.moveTo(27, -38); ctx.lineTo(33 + mo * 2, -35 + mo * 5); ctx.stroke();
+    ell(ctx, 29, -39, 3, 2, '#5a2a22');
+    // eyestalks
+    for (let i = 0; i < 2; i++) {
+      const bx = 14 + i * 8, by = -68, ex = bx + 3 + Math.sin(t * 2.4 + i * 1.5) * 1.5 + (p.eat ? 2 : 0), ey = -84 - i * 2 + Math.sin(t * 3 + i) * 1;
+      limb(ctx, bx, by, ex, ey, 3, S3, 0.05);
+      ell(ctx, ex, ey, 4, 4, '#fff'); ell(ctx, ex + 1.2, ey, 1.8, 1.8, INK);
+    }
+    // near-side legs
+    for (let i = 0; i < 4; i++) {
+      let fx, fy;
+      if (p.climb) { fx = 30 + ((i + 1) % 2) * 3; fy = -22 - i * 11 + Math.sin(p.climbPhase + i * 1.7) * 5; }
+      else if (p.air) { fx = legX[i] * 1.5 + 4; fy = -8 + (i % 2) * 3; }
+      else { const ph = p.walkPhase + i * Math.PI; fx = legX[i] * 1.35 + 6 + Math.sin(ph) * 9; fy = -Math.max(0, Math.cos(ph)) * 4; }
+      if (i % 2 === 1) leg(legX[i], fx, fy, S1);
+    }
+    // big punching claw
+    let rest;
+    if (p.climb) rest = [30, -92 + Math.sin(p.climbPhase) * 6];
+    else if (p.eat) rest = [28, -58];
+    else rest = [34 - sw * 6, -44];
+    const [hx, hy] = handTarget(p, rest[0], rest[1]);
+    limb(ctx, 18, -54, hx - 8, hy, 9, S1, -0.18);
+    const pa = p.punch > 0 ? (p.punch < 0.3 ? 0.8 : Math.max(0, 0.8 - (p.punch - 0.3) * 4)) : 0.14 + 0.05 * Math.sin(t * 2);
+    claw(hx, hy, 1.3, p.eat ? -0.7 : p.climb ? -0.4 : 0, pa, S1, S3);
+    ctx.restore();
+  },
+  drawRevert(ctx, t) {  // a stiff plastic toy crab with the price tag still on
+    const sc = Math.sin(t * 16), hop = -Math.abs(sc) * 2.5;
+    ctx.save(); ctx.translate(0, hop);
+    ctx.strokeStyle = '#d9583f'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+    for (let i = 0; i < 3; i++) { const lx = -6 + i * 4 + sc * 1.5; ctx.beginPath(); ctx.moveTo(lx, -6); ctx.lineTo(lx - 3, -1); ctx.moveTo(lx + 1, -6); ctx.lineTo(lx + 3, -1); ctx.stroke(); }
+    ell(ctx, 0, -9, 10, 5.5, '#d9583f');
+    ell(ctx, 0, -10.5, 8, 3, '#f08a3c');
+    ell(ctx, 10, -13, 3.5, 3, '#d9583f'); ell(ctx, -3, -13, 3.5, 3, '#d9583f');
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-2, -16, 1.8, 0, Math.PI * 2); ctx.arc(4, -16, 1.8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(-1.6, -16, 0.8, 0, Math.PI * 2); ctx.arc(4.4, -16, 0.8, 0, Math.PI * 2); ctx.fill();
+    ell(ctx, -9, -13, 3, 2.4, '#d9583f'); ell(ctx, 10, -12, 3.6, 2.8, '#d9583f');
+    ctx.strokeStyle = '#ccc'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(-2, -3); ctx.stroke();
+    ctx.fillStyle = '#f5f4ee'; ctx.fillRect(-6, -4, 5, 4);
+    ctx.fillStyle = '#111'; for (let i = 0; i < 4; i++) ctx.fillRect(-5.3 + i * 1.1, -3.3, 0.5, 2.6);
+    ctx.restore();
+  },
+});

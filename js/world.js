@@ -110,6 +110,7 @@ const FX = {
 
 /* ---------------- Buildings ---------------- */
 const FH = 38, CW = 32, BPAD = 6;   // floor height, column width, side padding
+const COLLAPSE_AT = 0.4;            // a building falls once this fraction of its total window HP is gone
 
 function makeJag() { const a = []; for (let i = 0; i < 12; i++) a.push(rand(0, 6)); return a; }
 
@@ -125,7 +126,7 @@ class Building {
     if (city.eldritch) this.style = rng() < 0.6 ? 'spire' : 'plain';
     this.sign = BILLBOARDS[Math.floor(rng() * BILLBOARDS.length)];
     this.sink = 0; this.sinkV = 0; this.collapsing = false; this.gone = false;
-    this.shakeT = 0; this.destroyed = 0;
+    this.shakeT = 0; this.destroyed = 0; this.dmgTaken = 0; this.maxHp = floors * cols * 3;
     this.rubble = []; for (let i = 0; i < 9; i++) this.rubble.push(rng());
     this.cells = [];
     const pSol = Math.min(0.13, 0.035 * d);
@@ -166,6 +167,7 @@ class Building {
     cell.hp = Math.max(0, cell.hp - dmg);
     // A window with something inside always breaks open first, so it can be grabbed.
     if (cell.occ && before > 1 && cell.hp <= 0) cell.hp = 0.5;
+    this.dmgTaken += before - cell.hp;
     const { x, y } = this.cellCenter(f, c);
     this.shakeT = 0.15;
     if (before > 1 && cell.hp <= 1) { Sfx.play('glass'); FX.glass(x, y, 9); game.addScore(50); }
@@ -176,19 +178,17 @@ class Building {
       game.addScore(100, x, y - 10);
       Sfx.play('punch');
       cell.occ = null;
-      this.checkCollapse(game);
     } else {
       FX.debris(x, y, 3, [this.color, this.trim]);
       if (before <= 1) Sfx.play('punch');
     }
+    this.checkCollapse(game);
     return true;
   }
   checkCollapse(game) {
     if (this.collapsing) return;
-    const total = this.floors * this.cols;
-    let floorGone = false;
-    for (let f = 0; f < this.floors; f++) if (this.cells[f].every(cl => cl.hp <= 0)) { floorGone = true; break; }
-    if (this.destroyed >= Math.ceil(total * 0.3) || floorGone) game.collapseBuilding(this);
+    // Overall damage only: no single floor or row can bring it down early, so it pays to work the whole face.
+    if (this.dmgTaken >= this.maxHp * COLLAPSE_AT) game.collapseBuilding(this);
   }
   update(dt, game) {
     if (this.shakeT > 0) this.shakeT -= dt;
@@ -245,6 +245,13 @@ class Building {
       ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillRect(dx + 2, GROUND + this.sink - 22, 5, 20);
     }
     ctx.restore();
+    // damage meter: fills toward collapse
+    if (this.alive && this.dmgTaken > 0) {
+      const k = Math.min(1, this.dmgTaken / (this.maxHp * COLLAPSE_AT)), by = top - 16;
+      ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(x + 4, by, w - 8, 5);
+      ctx.fillStyle = k > 0.75 ? '#ff4b3a' : k > 0.4 ? '#ffb23a' : '#ffe27a';
+      ctx.fillRect(x + 5, by + 1, (w - 10) * k, 3);
+    }
   }
   drawCell(ctx, cell, x, y, city, t, ground, mx) {
     if (cell.hp <= 0) {
