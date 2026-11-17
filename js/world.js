@@ -8,16 +8,66 @@
 const CITIES = [
   { name: 'PEORIA', sub: 'Illinois, USA', sky: ['#5fb0e6', '#d8f1ff'], tod: 'day', far: '#8fb0c8',
     ground: '#47474e', walk: '#8f8b85', colors: ['#b5653d', '#9b8a76', '#c9a66b', '#7f8794', '#a34c3a'], landmark: 'water' },
-  { name: 'PARIS', sub: 'France', sky: ['#e97e58', '#ffd9a3'], tod: 'dusk', far: '#b8735f',
-    ground: '#3d3a40', walk: '#9b8f84', colors: ['#d9c7a3', '#cdb88f', '#bfae94', '#a89a86'], landmark: 'eiffel' },
-  { name: 'TOKYO', sub: 'Japan', sky: ['#0b0f2a', '#3a2464'], tod: 'night', far: '#2a2448',
-    ground: '#22222c', walk: '#4a4a58', colors: ['#3a3f58', '#4b3f63', '#2f4a5c', '#5a3d4f'], landmark: 'lattice' },
-  { name: 'CAIRO', sub: 'Egypt', sky: ['#efbe5f', '#fff1c8'], tod: 'day', far: '#d4ab70',
-    ground: '#6b5a44', walk: '#c8b08a', colors: ['#d6b98a', '#c9a57a', '#b8925f', '#e0c9a0'], landmark: 'pyramids' },
+  { name: 'CHICAGO', sub: 'Illinois, USA', sky: ['#4a7fb8', '#cfe2f0'], tod: 'day', far: '#6f8aa3',
+    ground: '#34363c', walk: '#8d8f94', colors: ['#5d6b7a', '#8a949f', '#3f4c5a', '#a35c3d', '#6f7f90'], landmark: 'skyscraper' },
+  { name: 'LAS VEGAS', sub: 'Nevada, USA', sky: ['#120726', '#7a1f6b'], tod: 'night', far: '#3b1c4f',
+    ground: '#2a2230', walk: '#5c4a62', colors: ['#c2368f', '#3b86c6', '#d9a42c', '#6a3bb0', '#2fb59a'], landmark: 'strip' },
+  { name: 'SAN FRANCISCO', sub: 'California, USA', sky: ['#f08a5d', '#fbe3c0'], tod: 'dusk', far: '#a86a63',
+    ground: '#3a3a42', walk: '#a79d92', colors: ['#e8d7c0', '#c96a5a', '#8fb2c4', '#f0c987', '#a7b88a'], landmark: 'bridge' },
+  { name: 'MEXICO CITY', sub: 'Mexico', sky: ['#3d9bd6', '#fde8b5'], tod: 'day', far: '#a3805f',
+    ground: '#4a4038', walk: '#b79a74', colors: ['#d95f3b', '#e6b23a', '#3aa0a0', '#c4488a', '#e89a5a'], landmark: 'stepped' },
+  { name: 'HAVANA', sub: 'Cuba', sky: ['#2bb8d6', '#fff0c8'], tod: 'day', far: '#6fa89a',
+    ground: '#4a4a4d', walk: '#cfc4a8', colors: ['#6ec9c0', '#f0a8b8', '#f2d36b', '#e8885a', '#8fc2e8'], landmark: 'capitol' },
+  { name: 'NEW YORK', sub: 'New York, USA', sky: ['#243a6b', '#f0a070'], tod: 'dusk', far: '#4b4f7a',
+    ground: '#2e2e36', walk: '#7e7c82', colors: ['#8c5a44', '#6d7380', '#a08468', '#4e5868', '#b5a58f'], landmark: 'statue' },
+  { name: 'DUNWICH', sub: 'Massachusetts, USA (stay off the hills)', sky: ['#0a0d12', '#2f3a2a'], tod: 'night', far: '#1a2420',
+    ground: '#1c1d18', walk: '#3c3d33', colors: ['#4a4235', '#3b3a30', '#55503f', '#2f3a38'], landmark: 'stones' },
+  { name: 'REYKJAVIK', sub: 'Iceland', sky: ['#04101f', '#0f3a4a'], tod: 'night', far: '#2a4a5a',
+    ground: '#23282e', walk: '#4f5a63', colors: ['#c8553d', '#e3d9c6', '#3f6f8f', '#d9b64a', '#6a7480'], landmark: 'volcano' },
+  { name: 'DUBLIN', sub: 'Ireland', sky: ['#8d9aa6', '#d9dfd0'], tod: 'day', far: '#6f8a74',
+    ground: '#3b3d40', walk: '#85888a', colors: ['#8c4a3a', '#3f6b4f', '#b38f6a', '#5a5f68', '#c9b99a'], landmark: 'needle' },
   { name: 'LONDON', sub: 'United Kingdom', sky: ['#7f8b98', '#c9d0d6'], tod: 'day', far: '#77828d',
     ground: '#3e4046', walk: '#7d7f84', colors: ['#8a4b3a', '#6e6a66', '#9a8f80', '#5c5f66'], landmark: 'clock' },
+  { name: 'AMSTERDAM', sub: 'Netherlands', sky: ['#6fb5de', '#f2f4e8'], tod: 'day', far: '#8da7a0',
+    ground: '#4a4440', walk: '#a89c8a', colors: ['#8f3f35', '#a85d3f', '#6d4a3a', '#b8825a', '#5d6f7a'], landmark: 'windmills' },
+  { name: 'PARIS', sub: 'France', sky: ['#e97e58', '#ffd9a3'], tod: 'dusk', far: '#b8735f',
+    ground: '#3d3a40', walk: '#9b8f84', colors: ['#d9c7a3', '#cdb88f', '#bfae94', '#a89a86'], landmark: 'eiffel' },
+  { name: 'BERLIN', sub: 'Germany', sky: ['#6d7a8c', '#c5ccd4'], tod: 'day', far: '#78808c',
+    ground: '#38393f', walk: '#7a7b80', colors: ['#9a9488', '#6d7580', '#b0a48a', '#7e5f52', '#5a6370'], landmark: 'arch' },
+  { name: 'ROME', sub: 'Italy', sky: ['#4aa3dc', '#ffe2a8'], tod: 'day', far: '#b88a6a',
+    ground: '#4a423c', walk: '#c4b08e', colors: ['#d99a5f', '#c97b4a', '#e8c48a', '#b8693f', '#d8b078'], landmark: 'colosseum' },
+  { name: 'VENICE', sub: 'Italy', sky: ['#6b5aa8', '#ffb98a'], tod: 'dusk', far: '#8a6f8c',
+    ground: '#2f4a58', walk: '#b9a98f', colors: ['#d4806a', '#e8c39a', '#b86a5a', '#c9a15f', '#9a7f8f'], landmark: 'canal' },
+  { name: 'ATHENS', sub: 'Greece', sky: ['#2e8fd8', '#e9f6ff'], tod: 'day', far: '#b9b2a0',
+    ground: '#4a4a48', walk: '#d8d2c2', colors: ['#f2efe6', '#e3dccb', '#c9d8e6', '#b8c8d8', '#e8d9b0'], landmark: 'acropolis' },
+  { name: 'ISTANBUL', sub: 'Turkey', sky: ['#3a3070', '#ff9a6a'], tod: 'dusk', far: '#6a4f7a',
+    ground: '#3a3440', walk: '#9b8e8a', colors: ['#c97b5a', '#d9b48a', '#8a5a6a', '#b8604a', '#a89a8f'], landmark: 'minarets' },
   { name: 'MOSCOW', sub: 'Russia', sky: ['#34457a', '#d39aa2'], tod: 'dusk', far: '#55578a',
     ground: '#3a3a44', walk: '#c7c9d1', colors: ['#b9b0a2', '#9c4b45', '#d1c7b2', '#7a8290'], landmark: 'domes' },
+  { name: 'CAIRO', sub: 'Egypt', sky: ['#efbe5f', '#fff1c8'], tod: 'day', far: '#d4ab70',
+    ground: '#6b5a44', walk: '#c8b08a', colors: ['#d6b98a', '#c9a57a', '#b8925f', '#e0c9a0'], landmark: 'pyramids' },
+  { name: 'MARRAKECH', sub: 'Morocco', sky: ['#e0954f', '#ffe3b0'], tod: 'day', far: '#b8704f',
+    ground: '#6a4a38', walk: '#c9976a', colors: ['#c4603f', '#d98a5a', '#b8483a', '#e0a878', '#9c5040'], landmark: 'medina' },
+  { name: 'NAIROBI', sub: 'Kenya', sky: ['#4fa8d8', '#fff3c9'], tod: 'day', far: '#7f9a6a',
+    ground: '#5a4a38', walk: '#b89a70', colors: ['#d9c08a', '#a8784f', '#6f8f6a', '#c46a3f', '#8aa0a8'], landmark: 'acacia' },
+  { name: 'CAPE TOWN', sub: 'South Africa', sky: ['#2f7fc4', '#bfe6f2'], tod: 'day', far: '#5a7f8f',
+    ground: '#44464a', walk: '#c2b8a2', colors: ['#f2e6c9', '#d9825a', '#8fb5c9', '#c8b36a', '#a86a5a'], landmark: 'table' },
+  { name: 'DUBAI', sub: 'United Arab Emirates', sky: ['#07142e', '#274a7a'], tod: 'night', far: '#1f3b62',
+    ground: '#26282f', walk: '#5c6270', colors: ['#7a96b8', '#a9bccf', '#5d7a9a', '#c9d4e0', '#6f8aa8'], landmark: 'burj' },
+  { name: 'MUMBAI', sub: 'India', sky: ['#c0445a', '#ffc27a'], tod: 'dusk', far: '#8a5060',
+    ground: '#3d3a3a', walk: '#a8977f', colors: ['#d9a23a', '#c24a5a', '#3f8f8a', '#e07a3a', '#8a5aa8'], landmark: 'gateway' },
+  { name: 'BANGKOK', sub: 'Thailand', sky: ['#0d1030', '#5a2a5a'], tod: 'night', far: '#3a2a4a',
+    ground: '#2c2a30', walk: '#6a5a52', colors: ['#d4a23a', '#b83a4a', '#3a9a8a', '#e0703a', '#7a4a9a'], landmark: 'prang' },
+  { name: 'HONG KONG', sub: 'China', sky: ['#7fa8c0', '#d8e4e8'], tod: 'day', far: '#6a8a9f',
+    ground: '#34383c', walk: '#8a8f92', colors: ['#4f7a8f', '#7a96a8', '#9c4a4a', '#c9a14a', '#5a6a78'], landmark: 'junk' },
+  { name: 'SEOUL', sub: 'South Korea', sky: ['#9ac4e8', '#f4f0e6'], tod: 'day', far: '#b8806a',
+    ground: '#3c3a3a', walk: '#a49a8a', colors: ['#d9763a', '#b8483a', '#e6b04a', '#6a7f8f', '#c89a6a'], landmark: 'pagoda' },
+  { name: 'TOKYO', sub: 'Japan', sky: ['#0b0f2a', '#3a2464'], tod: 'night', far: '#2a2448',
+    ground: '#22222c', walk: '#4a4a58', colors: ['#3a3f58', '#4b3f63', '#2f4a5c', '#5a3d4f'], landmark: 'lattice' },
+  { name: 'SYDNEY', sub: 'Australia', sky: ['#2b9ae0', '#d6f3ff'], tod: 'day', far: '#6f9aa8',
+    ground: '#44464a', walk: '#cfc6b2', colors: ['#e8dcc0', '#d98a4a', '#6aa5c9', '#c9a85a', '#8a9aa8'], landmark: 'opera' },
+  { name: 'BUENOS AIRES', sub: 'Argentina', sky: ['#6aa0d8', '#f6e4c8'], tod: 'day', far: '#9a8a8a',
+    ground: '#42424a', walk: '#b0a59a', colors: ['#c9a28a', '#a8b8c4', '#d9c08a', '#b87a6a', '#8a98a8'], landmark: 'obelisk' },
   { name: 'RIO DE JANEIRO', sub: 'Brazil', sky: ['#ff7650', '#ffd56e'], tod: 'dusk', far: '#7c5a7a',
     ground: '#444448', walk: '#d9cfb8', colors: ['#f2e2c4', '#e8b48a', '#9fc3c1', '#e7d36b'], landmark: 'sugarloaf' },
   { name: "R'LYEH", sub: 'South Pacific (recently surfaced)', sky: ['#02130f', '#0f4e3f'], tod: 'night', far: '#0f332b',
@@ -122,7 +172,7 @@ class Building {
     this.trim = shade(this.color, -0.28);
     const styles = ['antenna', 'tank', 'sign', 'plain', 'ac'];
     this.style = styles[Math.floor(rng() * styles.length)];
-    if (city.landmark === 'domes' && rng() < 0.45) this.style = 'dome';
+    if ((city.landmark === 'domes' || city.landmark === 'minarets') && rng() < 0.45) this.style = 'dome';
     if (city.eldritch) this.style = rng() < 0.6 ? 'spire' : 'plain';
     this.sign = BILLBOARDS[Math.floor(rng() * BILLBOARDS.length)];
     this.sink = 0; this.sinkV = 0; this.collapsing = false; this.gone = false;
@@ -580,6 +630,16 @@ class Shot {
 }
 
 /* ---------------- Backdrop ---------------- */
+function lmPalm(ctx, x, by, h, t) {
+  ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x, by); ctx.quadraticCurveTo(x + 8, by - h * 0.5, x + 3, by - h); ctx.stroke();
+  ctx.lineWidth = 3; ctx.beginPath();
+  for (let k = -3; k <= 3; k++) {
+    const sw = Math.sin(t * 1.2 + k) * 2;
+    ctx.moveTo(x + 3, by - h); ctx.quadraticCurveTo(x + 3 + k * 9, by - h - 16 + Math.abs(k) * 2 + sw, x + 3 + k * 15, by - h + 6 + Math.abs(k) * 5);
+  }
+  ctx.stroke();
+}
+
 function drawLandmark(ctx, kind, col, t, city) {
   const by = GROUND - 14;
   ctx.fillStyle = col; ctx.strokeStyle = col;
@@ -638,6 +698,306 @@ function drawLandmark(ctx, kind, col, t, city) {
       ctx.quadraticCurveTo(940, by - 160, 980, by); ctx.fill();
       ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(760, by - 62); ctx.lineTo(880, by - 228); ctx.stroke();
       break;
+    case 'skyscraper': {
+      [[590, 150, 44], [645, 210, 38], [700, 270, 50], [765, 340, 54], [830, 250, 42], [885, 200, 46], [935, 150, 36]].forEach(([x, h, w], i) => {
+        ctx.fillRect(x - w / 2, by - h, w, h);
+        if (i === 3) { ctx.fillRect(x - w / 4, by - h - 26, w / 2, 26); ctx.fillRect(x - 10, by - h - 40, 3, 16); ctx.fillRect(x + 7, by - h - 40, 3, 16); }
+        if (i === 1) { ctx.beginPath(); ctx.moveTo(x - w / 2, by - h); ctx.lineTo(x, by - h - 22); ctx.lineTo(x + w / 2, by - h); ctx.fill(); }
+      });
+      break;
+    }
+    case 'strip': {
+      const x = 860;
+      ctx.fillRect(x - 4, by - 250, 8, 250); ctx.beginPath(); ctx.ellipse(x, by - 258, 24, 13, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(x - 8, by - 290, 16, 34); ctx.fillRect(x - 1, by - 320, 2, 30);
+      ctx.beginPath(); ctx.moveTo(660, by); ctx.lineTo(720, by - 120); ctx.lineTo(780, by); ctx.fill();
+      ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(600, by - 72, 60, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 2; ctx.beginPath(); for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3 + t * 0.2; ctx.moveTo(600, by - 72); ctx.lineTo(600 + Math.cos(a) * 60, by - 72 + Math.sin(a) * 60); } ctx.stroke();
+      ctx.fillRect(594, by - 72, 12, 72);
+      ctx.strokeStyle = `rgba(255,80,210,${0.5 + 0.4 * Math.sin(t * 4)})`; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(x, by - 258, 24, 13, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(660, by); ctx.lineTo(720, by - 120); ctx.lineTo(780, by); ctx.closePath(); ctx.stroke();
+      break;
+    }
+    case 'bridge': {
+      const top = by - 210, xl = 650, xr = 880, cx = (xl + xr) / 2, half = (xr - xl) / 2;
+      ctx.fillRect(560, by - 42, 400, 8);
+      [xl, xr].forEach(x => { ctx.fillRect(x - 8, top, 6, 210); ctx.fillRect(x + 2, top, 6, 210); ctx.fillRect(x - 8, top + 50, 16, 5); ctx.fillRect(x - 8, top + 110, 16, 5); });
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(xl, top); ctx.quadraticCurveTo(cx, by - 40, xr, top); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(xl, top); ctx.quadraticCurveTo(600, by - 100, 560, by - 44); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(xr, top); ctx.quadraticCurveTo(920, by - 100, 960, by - 44); ctx.stroke();
+      ctx.lineWidth = 1; ctx.beginPath();
+      for (let x = xl + 12; x < xr; x += 14) { const u = (x - cx) / half; ctx.moveTo(x, top + 80 * (1 - u * u)); ctx.lineTo(x, by - 42); }
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.fillRect(560, by - 70, 400, 46); ctx.fillRect(600, by - 110, 120, 30);
+      break;
+    }
+    case 'stepped': {
+      const temple = (x, s) => {
+        for (let i = 0; i < 5; i++) ctx.fillRect(x - (130 - i * 22) * s, by - (i + 1) * 26 * s, (260 - i * 44) * s, 26 * s);
+        ctx.fillRect(x - 18 * s, by - 152 * s, 36 * s, 22 * s);
+      };
+      temple(740, 1); temple(610, 0.55);
+      ctx.fillStyle = shade(col, 0.15); for (let i = 0; i < 4; i++) ctx.fillRect(734, by - 26 * i - 26, 12, 26);
+      ctx.fillStyle = col;
+      ctx.fillRect(896, by - 190, 8, 190); ctx.fillRect(886, by - 22, 28, 22);
+      ctx.beginPath(); ctx.arc(900, by - 202, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(890, by - 192); ctx.lineTo(900, by - 214); ctx.lineTo(910, by - 192); ctx.fill();
+      break;
+    }
+    case 'capitol': {
+      ctx.fillRect(610, by - 66, 280, 66);
+      ctx.beginPath(); ctx.moveTo(700, by - 66); ctx.lineTo(750, by - 92); ctx.lineTo(800, by - 66); ctx.fill();
+      ctx.fillRect(722, by - 116, 56, 50);
+      ctx.beginPath(); ctx.arc(750, by - 116, 36, Math.PI, 0); ctx.fill();
+      ctx.fillRect(747, by - 176, 6, 24); ctx.fillRect(745, by - 168, 10, 3);
+      ctx.fillStyle = shade(col, 0.2);
+      for (let i = 0; i < 12; i++) ctx.fillRect(620 + i * 23, by - 60, 5, 54);
+      ctx.fillStyle = col;
+      lmPalm(ctx, 585, by, 140, t); lmPalm(ctx, 925, by, 120, t);
+      break;
+    }
+    case 'statue': {
+      const x = 850;
+      [[640, 200, 34], [690, 260, 30]].forEach(([bx, h, w]) => { ctx.fillRect(bx - w / 2, by - h, w, h); ctx.fillRect(bx - w / 4, by - h - 24, w / 2, 24); ctx.fillRect(bx - 1, by - h - 50, 2, 26); });
+      ctx.fillRect(x - 40, by - 24, 80, 24);
+      ctx.beginPath(); ctx.moveTo(x - 36, by - 24); ctx.lineTo(x - 24, by - 38); ctx.lineTo(x + 24, by - 38); ctx.lineTo(x + 36, by - 24); ctx.fill();
+      ctx.fillRect(x - 24, by - 98, 48, 60);
+      ctx.beginPath(); ctx.moveTo(x - 20, by - 98); ctx.lineTo(x - 13, by - 190); ctx.lineTo(x + 13, by - 190); ctx.lineTo(x + 20, by - 98); ctx.fill();
+      ctx.beginPath(); ctx.arc(x, by - 202, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = 2; ctx.beginPath();
+      for (let k = -3; k <= 3; k++) { ctx.moveTo(x + k * 3, by - 210); ctx.lineTo(x + k * 9, by - 228 + Math.abs(k) * 3); }
+      ctx.stroke();
+      ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(x + 10, by - 184); ctx.lineTo(x + 28, by - 244); ctx.stroke();
+      ctx.fillRect(x + 22, by - 252, 14, 8);
+      ctx.fillStyle = '#ffcc4d'; ctx.beginPath(); ctx.ellipse(x + 29, by - 262, 5, 9, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = col; ctx.fillRect(x - 26, by - 162, 10, 18);
+      break;
+    }
+    case 'stones': {
+      const hy = x => { const u = (x - 560) / 400; return by - 400 * u * (1 - u); };
+      ctx.beginPath(); ctx.moveTo(560, by); ctx.quadraticCurveTo(760, by - 200, 960, by); ctx.fill();
+      [[690, 44, -3], [722, 58, 2], [752, 70, -1], [784, 54, 4], [816, 62, -2], [846, 40, 3]].forEach(([x, h, l]) => {
+        const y = hy(x);
+        ctx.beginPath(); ctx.moveTo(x - 6, y + 4); ctx.lineTo(x - 4 + l, y - h); ctx.lineTo(x + 5 + l, y - h + 5); ctx.lineTo(x + 7, y + 4); ctx.fill();
+      });
+      ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(620, hy(620)); ctx.lineTo(626, hy(620) - 50); ctx.lineTo(616, hy(620) - 76);
+      ctx.moveTo(626, hy(620) - 50); ctx.lineTo(640, hy(620) - 64); ctx.stroke();
+      ctx.fillRect(900, by - 34, 36, 34); ctx.beginPath(); ctx.moveTo(894, by - 34); ctx.lineTo(918, by - 56); ctx.lineTo(942, by - 34); ctx.fill();
+      if (Math.sin(t * 1.3) > 0.2) { ctx.fillStyle = 'rgba(255,200,90,0.7)'; ctx.fillRect(912, by - 24, 6, 8); ctx.fillStyle = col; }
+      break;
+    }
+    case 'volcano': {
+      if (city && city.tod === 'night') {
+        ctx.save(); ctx.lineWidth = 16;
+        for (let i = 0; i < 3; i++) {
+          ctx.strokeStyle = `rgba(110,255,180,${0.1 + 0.05 * Math.sin(t + i)})`; ctx.beginPath();
+          for (let x = 0; x <= W; x += 20) { const y = 90 + i * 34 + Math.sin(x * 0.008 + t * 0.5 + i * 2) * 22; x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+          ctx.stroke();
+        }
+        ctx.restore(); ctx.strokeStyle = col;
+      }
+      ctx.beginPath(); ctx.moveTo(580, by); ctx.lineTo(740, by - 160); ctx.lineTo(790, by - 160); ctx.lineTo(960, by); ctx.fill();
+      ctx.fillStyle = 'rgba(235,244,255,0.45)'; ctx.beginPath(); ctx.moveTo(712, by - 132); ctx.lineTo(740, by - 160); ctx.lineTo(790, by - 160); ctx.lineTo(818, by - 128); ctx.lineTo(780, by - 140); ctx.lineTo(752, by - 126); ctx.fill();
+      ctx.fillStyle = col;
+      ctx.fillRect(626, by - 120, 18, 120); ctx.fillRect(614, by - 60, 12, 60); ctx.fillRect(644, by - 60, 12, 60); ctx.fillRect(606, by - 30, 8, 30); ctx.fillRect(656, by - 30, 8, 30);
+      ctx.beginPath(); ctx.moveTo(626, by - 120); ctx.lineTo(635, by - 150); ctx.lineTo(644, by - 120); ctx.fill();
+      break;
+    }
+    case 'needle': {
+      const x = 830;
+      ctx.beginPath(); ctx.moveTo(x - 6, by); ctx.lineTo(x, by - 340); ctx.lineTo(x + 6, by); ctx.fill();
+      ctx.fillRect(630, by - 120, 18, 120); ctx.beginPath(); ctx.moveTo(627, by - 120); ctx.lineTo(639, by - 156); ctx.lineTo(651, by - 120); ctx.fill();
+      ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(700, by - 6); ctx.quadraticCurveTo(740, by - 56, 780, by - 6); ctx.stroke();
+      ctx.fillRect(690, by - 8, 100, 4);
+      ctx.fillRect(900, by - 60, 50, 60); ctx.fillRect(920, by - 76, 10, 16);
+      break;
+    }
+    case 'windmills': {
+      [[650, 110], [770, 140], [890, 100]].forEach(([x, h], i) => {
+        ctx.beginPath(); ctx.moveTo(x - 17, by); ctx.lineTo(x - 10, by - h); ctx.lineTo(x + 10, by - h); ctx.lineTo(x + 17, by); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x - 12, by - h); ctx.quadraticCurveTo(x, by - h - 22, x + 12, by - h); ctx.fill();
+        ctx.save(); ctx.translate(x, by - h + 6); ctx.rotate(t * 0.4 + i);
+        ctx.lineWidth = 3;
+        for (let k = 0; k < 4; k++) { ctx.rotate(Math.PI / 2); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(56, 0); ctx.stroke(); ctx.fillRect(14, -9, 40, 9); }
+        ctx.restore();
+      });
+      break;
+    }
+    case 'arch': {
+      const x = 780;
+      for (let i = 0; i < 6; i++) ctx.fillRect(x - 108 + i * 41, by - 100, 14, 100);
+      ctx.fillRect(x - 118, by - 120, 236, 20); ctx.fillRect(x - 58, by - 148, 116, 28);
+      ctx.fillRect(x - 16, by - 160, 32, 12);
+      for (let k = -1; k <= 1; k += 2) { ctx.beginPath(); ctx.ellipse(x + k * 14, by - 172, 10, 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(x + k * 14 + k * 4 - 1, by - 190, 3, 18); }
+      ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, by - 160); ctx.lineTo(x, by - 196); ctx.moveTo(x - 14, by - 184); ctx.lineTo(x, by - 192); ctx.lineTo(x + 14, by - 184); ctx.stroke();
+      ctx.fillRect(638, by - 250, 4, 250); ctx.beginPath(); ctx.arc(640, by - 200, 13, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(639, by - 290, 2, 40);
+      break;
+    }
+    case 'colosseum': {
+      const top = x => x < 640 ? by - 70 - (x - 620) : x < 800 ? by - 96 : x < 840 ? by - 96 + (x - 800) * 0.4 : x < 880 ? by - 80 + (x - 840) * 0.2 : by - 72 + (x - 880) * 1.1;
+      ctx.beginPath(); ctx.moveTo(620, by); ctx.lineTo(620, by - 70); ctx.lineTo(640, by - 96); ctx.lineTo(800, by - 96); ctx.lineTo(840, by - 80); ctx.lineTo(880, by - 72); ctx.lineTo(900, by - 50); ctx.lineTo(900, by); ctx.fill();
+      ctx.fillStyle = shade(col, -0.3);
+      for (let k = 0; k < 3; k++) for (let i = 0; i < 10; i++) {
+        const ax = 630 + i * 26.5, ay = by - 28 * (k + 1) + 4;
+        if (ay < top(ax + 5) + 4 || ay < top(ax - 2) + 4) continue;
+        ctx.beginPath(); ctx.moveTo(ax, ay + 20); ctx.lineTo(ax, ay + 6); ctx.arc(ax + 5, ay + 6, 5, Math.PI, 0); ctx.lineTo(ax + 10, ay + 20); ctx.fill();
+      }
+      ctx.fillStyle = col;
+      break;
+    }
+    case 'canal': {
+      ctx.fillRect(632, by - 190, 16, 190); ctx.fillRect(628, by - 190, 24, 14);
+      ctx.beginPath(); ctx.moveTo(628, by - 190); ctx.lineTo(640, by - 226); ctx.lineTo(652, by - 190); ctx.fill();
+      ctx.fillRect(735, by - 60, 150, 60);
+      [[762, 24], [810, 32], [858, 24]].forEach(([x, r]) => { ctx.beginPath(); ctx.arc(x, by - 60, r, Math.PI, 0); ctx.fill(); ctx.fillRect(x - 1.5, by - 60 - r - 16, 3, 16); });
+      ctx.fillStyle = shade(col, -0.3);
+      for (let i = 0; i < 8; i++) { const ax = 744 + i * 18; ctx.beginPath(); ctx.moveTo(ax, by); ctx.lineTo(ax, by - 22); ctx.arc(ax + 6, by - 22, 6, Math.PI, 0); ctx.lineTo(ax + 12, by); ctx.fill(); }
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.moveTo(664, by - 12); ctx.quadraticCurveTo(700, by + 2, 724, by - 12); ctx.quadraticCurveTo(700, by - 6, 668, by - 6); ctx.lineTo(660, by - 22); ctx.fill();
+      ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(705, by - 8); ctx.lineTo(705, by - 34); ctx.moveTo(705, by - 30); ctx.lineTo(692, by - 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(705, by - 38, 4, 0, Math.PI * 2); ctx.fill();
+      break;
+    }
+    case 'acropolis': {
+      ctx.beginPath(); ctx.moveTo(560, by); ctx.lineTo(610, by - 84); ctx.lineTo(850, by - 90); ctx.lineTo(910, by); ctx.fill();
+      ctx.fillStyle = shade(col, 0.22);
+      ctx.fillRect(630, by - 100, 200, 10);
+      for (let i = 0; i < 9; i++) ctx.fillRect(636 + i * 22, by - 152, 10, 52);
+      ctx.fillRect(626, by - 164, 208, 12);
+      ctx.beginPath(); ctx.moveTo(626, by - 164); ctx.lineTo(730, by - 192); ctx.lineTo(834, by - 164); ctx.fill();
+      ctx.fillStyle = col;
+      break;
+    }
+    case 'minarets': {
+      ctx.fillRect(700, by - 70, 160, 70);
+      ctx.beginPath(); ctx.arc(780, by - 70, 48, Math.PI, 0); ctx.fill();
+      ctx.beginPath(); ctx.arc(722, by - 70, 24, Math.PI, 0); ctx.arc(838, by - 70, 24, Math.PI, 0); ctx.fill();
+      ctx.fillRect(779, by - 140, 2, 22);
+      [[670, 200], [885, 200], [735, 150], [825, 150]].forEach(([x, h]) => {
+        ctx.fillRect(x - 4, by - h, 8, h); ctx.fillRect(x - 8, by - h * 0.78, 16, 4);
+        ctx.beginPath(); ctx.moveTo(x - 6, by - h); ctx.lineTo(x, by - h - 34); ctx.lineTo(x + 6, by - h); ctx.fill();
+      });
+      break;
+    }
+    case 'medina': {
+      ctx.fillStyle = shade(col, 0.15);
+      ctx.beginPath(); ctx.moveTo(560, by); ctx.lineTo(640, by - 90); ctx.lineTo(700, by - 40); ctx.lineTo(790, by - 120); ctx.lineTo(870, by - 60); ctx.lineTo(960, by - 100); ctx.lineTo(960, by); ctx.fill();
+      ctx.fillStyle = col;
+      ctx.fillRect(758, by - 210, 44, 210); ctx.fillRect(768, by - 238, 24, 28);
+      ctx.beginPath(); ctx.arc(780, by - 244, 6, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(779, by - 266, 2, 20);
+      ctx.fillStyle = shade(col, 0.25); for (let i = 0; i < 3; i++) ctx.fillRect(766, by - 190 + i * 50, 28, 6);
+      ctx.fillStyle = col;
+      lmPalm(ctx, 690, by, 100, t); lmPalm(ctx, 860, by, 120, t); lmPalm(ctx, 915, by, 90, t);
+      break;
+    }
+    case 'acacia': {
+      [[650, 80], [770, 105], [890, 70]].forEach(([x, h]) => {
+        ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x, by); ctx.quadraticCurveTo(x - 6, by - h * 0.6, x + 4, by - h); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(x + 4, by - h - 2, 52, 9, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(x - 20, by - h + 4, 28, 6, 0, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.beginPath(); ctx.ellipse(700, by - 44, 22, 10, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = 3; ctx.beginPath();
+      [[686, 52], [692, 52], [708, 52], [714, 52]].forEach(([x, y]) => { ctx.moveTo(x, by - 44); ctx.lineTo(x, by - 2); });
+      ctx.stroke();
+      ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(716, by - 50); ctx.lineTo(728, by - 92); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(732, by - 96, 9, 5, -0.3, 0, Math.PI * 2); ctx.fill();
+      break;
+    }
+    case 'table': {
+      ctx.beginPath(); ctx.moveTo(540, by); ctx.lineTo(600, by - 110); ctx.lineTo(640, by - 168); ctx.lineTo(900, by - 176); ctx.lineTo(940, by - 150); ctx.lineTo(960, by - 70); ctx.lineTo(960, by); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.ellipse(650 + i * 32, by - 172 + (i % 2) * 6, 30, 9, 0, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = col;
+      break;
+    }
+    case 'burj': {
+      const x = 800, tiers = [30, 26, 22, 18, 14, 10, 6];
+      tiers.forEach((w, i) => ctx.fillRect(x - w / 2, by - (i + 1) * 40, w, 40));
+      ctx.beginPath(); ctx.moveTo(x - 3, by - 280); ctx.lineTo(x, by - 340); ctx.lineTo(x + 3, by - 280); ctx.fill();
+      ctx.fillRect(x - 24, by - 90, 8, 90); ctx.fillRect(x + 16, by - 130, 8, 130);
+      ctx.beginPath(); ctx.moveTo(640, by); ctx.lineTo(640, by - 170); ctx.quadraticCurveTo(720, by - 100, 690, by); ctx.fill();
+      [[720, 110, 20], [870, 150, 24], [920, 100, 22], [590, 90, 24]].forEach(([bx, h, w]) => ctx.fillRect(bx - w / 2, by - h, w, h));
+      if (Math.sin(t * 3) > 0) { ctx.fillStyle = '#ff3b30'; ctx.beginPath(); ctx.arc(x, by - 340, 2.5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = col; }
+      break;
+    }
+    case 'gateway': {
+      ctx.fillRect(720, by - 100, 120, 100);
+      ctx.beginPath(); ctx.arc(780, by - 100, 22, Math.PI, 0); ctx.fill(); ctx.fillRect(779, by - 146, 2, 24);
+      [722, 838].forEach(x => { ctx.fillRect(x - 8, by - 130, 16, 130); ctx.beginPath(); ctx.arc(x, by - 130, 10, Math.PI, 0); ctx.fill(); ctx.fillRect(x - 1, by - 152, 2, 12); });
+      ctx.fillStyle = shade(col, -0.35);
+      ctx.beginPath(); ctx.moveTo(762, by); ctx.lineTo(762, by - 58); ctx.arc(780, by - 58, 18, Math.PI, 0); ctx.lineTo(798, by); ctx.fill();
+      ctx.fillStyle = col;
+      ctx.fillRect(600, by - 70, 90, 70); [622, 668].forEach(x => { ctx.beginPath(); ctx.arc(x, by - 70, 14, Math.PI, 0); ctx.fill(); });
+      ctx.beginPath(); ctx.arc(645, by - 70, 18, Math.PI, 0); ctx.fill();
+      ctx.fillRect(900, by - 80, 40, 80);
+      break;
+    }
+    case 'prang': {
+      const prang = (x, s) => {
+        ctx.save(); ctx.translate(x, by); ctx.scale(s, s);
+        for (let i = 0; i < 5; i++) {
+          const bw = 50 - i * 8, y0 = -i * 50;
+          ctx.beginPath(); ctx.moveTo(-bw, y0); ctx.lineTo(-bw + 6, y0 - 50); ctx.lineTo(bw - 6, y0 - 50); ctx.lineTo(bw, y0); ctx.fill();
+        }
+        ctx.beginPath(); ctx.moveTo(-6, -250); ctx.lineTo(0, -320); ctx.lineTo(6, -250); ctx.fill();
+        ctx.restore();
+      };
+      prang(790, 1); prang(705, 0.42); prang(875, 0.42);
+      ctx.beginPath(); ctx.moveTo(580, by); ctx.lineTo(630, by - 50); ctx.lineTo(650, by - 36); ctx.lineTo(670, by - 56); ctx.lineTo(690, by); ctx.fill();
+      ctx.fillRect(920, by - 60, 36, 60);
+      break;
+    }
+    case 'pagoda': {
+      const x = 820;
+      for (let i = 0; i < 5; i++) {
+        const w = 92 - i * 14, y = by - 44 * i - 24;
+        ctx.fillRect(x - w * 0.4, y - 22, w * 0.8, 24);
+        ctx.beginPath(); ctx.moveTo(x - w, y - 14); ctx.quadraticCurveTo(x - w * 0.55, y - 16, x, y - 38); ctx.quadraticCurveTo(x + w * 0.55, y - 16, x + w, y - 14);
+        ctx.quadraticCurveTo(x, y - 24, x - w, y - 14); ctx.fill();
+      }
+      ctx.fillRect(x - 1, by - 44 * 4 - 82, 2, 30);
+      ctx.beginPath(); ctx.moveTo(560, by); ctx.quadraticCurveTo(650, by - 100, 730, by); ctx.fill();
+      ctx.fillRect(637, by - 200, 6, 120); ctx.beginPath(); ctx.ellipse(640, by - 150, 15, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(639, by - 226, 2, 28);
+      break;
+    }
+    case 'junk': {
+      ctx.fillStyle = shade(col, 0.12);
+      ctx.beginPath(); ctx.moveTo(540, by); ctx.quadraticCurveTo(640, by - 270, 800, by); ctx.fill();
+      ctx.fillStyle = col;
+      [[640, 200, 30], [685, 150, 26], [730, 250, 36], [775, 180, 28], [915, 170, 34], [945, 110, 28]].forEach(([x, h, w], i) => {
+        ctx.fillRect(x - w / 2, by - h, w, h);
+        if (i % 2 === 0) { ctx.beginPath(); ctx.moveTo(x - w / 2, by - h); ctx.lineTo(x, by - h - 26); ctx.lineTo(x + w / 2, by - h); ctx.fill(); }
+        else ctx.fillRect(x - 1, by - h - 30, 2, 30);
+      });
+      ctx.beginPath(); ctx.moveTo(800, by - 14); ctx.lineTo(900, by - 14); ctx.quadraticCurveTo(880, by + 2, 850, by + 2); ctx.lineTo(820, by + 2); ctx.quadraticCurveTo(805, by - 4, 800, by - 14); ctx.fill();
+      ctx.fillRect(846, by - 100, 3, 88);
+      ctx.fillStyle = '#8b2e2a';
+      ctx.beginPath(); ctx.moveTo(848, by - 96); ctx.lineTo(888, by - 86); ctx.lineTo(890, by - 28); ctx.lineTo(848, by - 22); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.3)'; for (let i = 1; i < 4; i++) ctx.fillRect(848, by - 96 + i * 18, 42, 2);
+      ctx.fillStyle = col;
+      break;
+    }
+    case 'opera': {
+      ctx.fillRect(640, by - 14, 290, 14);
+      [[690, 64, 66, 1], [736, 84, 96, 1], [800, 100, 112, 1], [858, 70, 74, -1], [904, 54, 52, -1]].forEach(([x, w, h, d]) => {
+        ctx.save(); ctx.translate(x, by - 14); ctx.scale(d, 1);
+        ctx.beginPath(); ctx.moveTo(-w / 2, 0); ctx.quadraticCurveTo(-w / 2, -h, w * 0.1, -h); ctx.quadraticCurveTo(w * 0.55, -h * 0.5, w / 2, 0); ctx.fill();
+        ctx.restore();
+      });
+      ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(560, by - 40); ctx.quadraticCurveTo(600, by - 130, 640, by - 40); ctx.stroke();
+      break;
+    }
+    case 'obelisk': {
+      const x = 800;
+      ctx.beginPath(); ctx.moveTo(x - 12, by); ctx.lineTo(x - 7, by - 250); ctx.lineTo(x, by - 278); ctx.lineTo(x + 7, by - 250); ctx.lineTo(x + 12, by); ctx.fill();
+      ctx.fillRect(x - 18, by - 10, 36, 10);
+      [[670, 90, 70], [905, 110, 64]].forEach(([bx, h, w]) => { ctx.fillRect(bx - w / 2, by - h, w, h); ctx.beginPath(); ctx.arc(bx, by - h, w * 0.3, Math.PI, 0); ctx.fill(); ctx.fillRect(bx - 1, by - h - w * 0.3 - 14, 2, 14); });
+      break;
+    }
     case 'monoliths': {
       const slabs = [[620, 200, -0.18], [700, 280, 0.12], [790, 240, -0.05], [870, 320, 0.22], [930, 180, -0.3]];
       slabs.forEach(([x, h, a], i) => {
