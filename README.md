@@ -49,8 +49,11 @@ biggest view; in portrait the game sits on top with the controls underneath.
   to bring up the keyboard, or dial with the joystick.
   Then you go back to the monster select screen to continue from the city where you fell.
   You can switch monsters there, and your score resets.
-- The tour runs Peoria → Paris → Tokyo → Cairo → London → Moscow → Rio → R'lyeh.
-  It then loops, and each new tour is harder.
+- The tour is 33 stops, heading west around the globe from Peoria (Chicago, Las Vegas, New York,
+  Dunwich, London, Rome, Cairo, Dubai, Tokyo, Sydney, Rio and more) and ending at R'lyeh. Difficulty
+  ramps across the tour, then it loops back to Peoria, and each new tour starts harder. It never just ends.
+- The monster select screen is a fighting-game roster: everyone on one screen, no scrolling.
+  Tiles shrink as more monsters are added. Arrows move around the grid.
 
 ## The roster
 
@@ -60,6 +63,7 @@ biggest view; in portrait the game sits on top with the controls underneath.
 | **Lanky Hank** | Climbing | Blink: short teleport with brief invulnerability | Longest reach, fastest climber. |
 | **Chronomunch** | Flying | Time Chomp: a lunge that eats everything in its path | Never climbs. Fragile. |
 | **Generic Kaiju** | Climbing | Foam Blast: a frothy cone of suds that wrecks windows, vehicles and soldiers | A store-brand giant crab. Big punching claw, sturdy. Hard shell: takes 10% less damage. |
+| **Act of God** | Flying | Smite: a volley of 6 lightning strikes rains down across the block, wrecking everything on the strike lines and briefly stunning the army | A grumpy thundercloud with long reach. Slow but sturdy. Overcast: takes 15% less damage. |
 
 ## Project layout
 

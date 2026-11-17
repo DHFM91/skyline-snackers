@@ -54,6 +54,7 @@ class Monster {
     this.walkPhase = 0; this.climbPhase = 0; this.eatT = 0; this.glide = false;
     this.defeated = false; this.defT = 0; this.onFloor = false; this.reverted = false; this.reported = false;
     this.dashT = 0; this.dashVX = 0; this.dashVY = 0; this.dashSet = null;
+    this.smite = null;
     this.entering = true;
   }
   box() { return { x: this.x - this.w / 2, y: this.y - this.h, w: this.w, h: this.h }; }
@@ -63,6 +64,7 @@ class Monster {
     this.t += dt;
     this.punchCd -= dt; this.punchT -= dt; this.hurtT -= dt; this.invuln -= dt; this.specialCd -= dt; this.eatT -= dt;
     if (this.defeated) { this.updateDefeat(dt, game); return; }
+    if (this.def.tick) this.def.tick(this, dt, game);
     const C = control && !this.entering;
     const L = C && Input.held('left'), R = C && Input.held('right'), U = C && Input.held('up'), D = C && Input.held('down');
     const J = C && Input.held('jump'), Jhit = C && Input.hit('jump');
@@ -171,9 +173,10 @@ class Monster {
     const s = this.s, f = this.facing, cy = this.y - this.h * s.armY;
     let hx, hy;
     if (s.flies) {
-      hx = this.x + f * (this.w * 0.5 + 6); hy = this.y - this.h * 0.5;
-      if (dir === 'up') { hx = this.x + f * 14; hy = this.y - this.h - 8; }
-      if (dir === 'down') { hx = this.x + f * 14; hy = this.y + 6; }
+      const fr = s.reach > 40 ? s.reach : 6, vr = s.reach > 40 ? s.reach * 0.7 : 8;   // long-reach flyers jab farther
+      hx = this.x + f * (this.w * 0.5 + fr); hy = this.y - this.h * 0.5;
+      if (dir === 'up') { hx = this.x + f * 14; hy = this.y - this.h - vr; }
+      if (dir === 'down') { hx = this.x + f * 14; hy = this.y + vr - 2; }
     } else if (this.state === 'climb' && dir === 'side') {
       hx = this.x + f * (s.reach * 0.6 + 8); hy = cy;
     } else if (dir === 'up') {
@@ -626,6 +629,122 @@ registerMonster({
     ctx.strokeStyle = '#ccc'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(-2, -3); ctx.stroke();
     ctx.fillStyle = '#f5f4ee'; ctx.fillRect(-6, -4, 5, 4);
     ctx.fillStyle = '#111'; for (let i = 0; i < 4; i++) ctx.fillRect(-5.3 + i * 1.1, -3.3, 0.5, 2.6);
+    ctx.restore();
+  },
+});
+
+/* ---------- 5. ACT OF GOD (original: the thundercloud that insurance policies are afraid of) ---------- */
+registerMonster({
+  id: 'actofgod', name: 'ACT OF GOD', tagline: 'Not covered. Not even a little.',
+  homage: "Every insurance policy's fine print",
+  move: 'FLIES', specialName: 'SMITE', specialDesc: 'A volley of lightning strikes rains down across the block',
+  passive: 'Overcast: soft and puffy, takes 15% less damage',
+  bars: { STR: 2, SPD: 2, REACH: 5, TOUGH: 4 },
+  stats: { w: 74, h: 56, speed: 135, climb: 0, jump: 0, dmg: 1.25, reach: 64, hitR: 16, punchCd: 0.42, maxHp: 130,
+    armor: 0.85, armY: 0.5, flies: true, specialCd: 7 },
+  portraitY: 0.5,
+  special(m, game) {
+    const n = 6, span = 150;
+    const xs = [];
+    for (let i = 0; i < n; i++) xs.push(clamp(m.x + (i / (n - 1) - 0.5) * 2 * span + rand(-14, 14), 20, W - 20));
+    for (let i = xs.length - 1; i > 0; i--) { const j = Math.floor(rand(0, i + 1)); [xs[i], xs[j]] = [xs[j], xs[i]]; }
+    m.smite = { t: 0, next: 0, strikes: xs.map((x, i) => ({ x, at: i * 0.11 })), once: new Set() };
+    for (const wk of game.walkers) if (!wk.air) wk.stun = Math.max(wk.stun || 0, 1.2);
+    for (const tk of game.tanks) tk.stun = Math.max(tk.stun || 0, 1.2);
+    for (const h of game.helis) if (!h.falling) h.stun = Math.max(h.stun || 0, 1.2);
+    game.windowStun = Math.max(game.windowStun, 1.5);
+    m.punchT = 0.2; m.punchDir = 'down';
+    FX.ring(m.x, m.y - m.h * 0.5, 120, '#cdb8ff', 0.5);
+    game.shake = Math.max(game.shake, 5);
+    Sfx.play('roar');
+  },
+  tick(m, dt, game) {
+    const sm = m.smite; if (!sm) return;
+    sm.t += dt;
+    const top = m.y - m.h * 0.5;
+    while (sm.next < sm.strikes.length && sm.strikes[sm.next].at <= sm.t) {
+      const x = sm.strikes[sm.next++].x;
+      let px = m.x + (x - m.x) * 0.15, py = top;
+      const steps = Math.max(8, Math.floor((GROUND - top) / 16));
+      for (let i = 1; i <= steps; i++) {
+        const nx = x + (i < steps ? rand(-9, 9) : 0), ny = top + (GROUND - top) * i / steps;
+        for (let k = 0; k < 4; k++) {
+          const u = k / 4;
+          FX.add({ x: px + (nx - px) * u, y: py + (ny - py) * u, grav: 0, life: rand(0.18, 0.3), size: rand(2, 3.6), color: pick(['#ffffff', '#e9e2ff', '#cdb8ff']), ground: false });
+        }
+        px = nx; py = ny;
+      }
+      for (let y = top + 10; y <= GROUND; y += 14) game.resolveHit(m, [{ x, y }], 16, 2, sm.once);
+      FX.spark(x, GROUND - 8, 8, '#e9e2ff');
+      FX.ring(x, GROUND - 4, 50, '#cdb8ff', 0.3);
+      FX.boom(x, GROUND - 12, 0.5);
+      FX.dust(x, GROUND - 6, 2, '#8d84a3', 14);
+      game.shake = Math.max(game.shake, 5);
+      Sfx.play('boom');
+    }
+    if (sm.next >= sm.strikes.length) m.smite = null;
+  },
+  draw(ctx, p) {
+    const t = p.t, B1 = '#5d5472', B2 = '#443c58', B3 = '#7a6f92', DK = '#2b2540';
+    const gulp = p.eat ? Math.abs(Math.sin(t * 22)) : 0;
+    const ph = Math.sin(t * 17) * Math.sin(t * 5.3);
+    const flick = ph > 0.72 ? (ph - 0.72) / 0.28 : 0;
+    ctx.save(); ctx.translate(0, Math.sin(t * 2.2) * 3 + (p.walk ? Math.sin(p.walkPhase) * 2 : 0));
+    if (p.dash) ctx.rotate(0.08);
+    // rain streaks beneath
+    ctx.strokeStyle = 'rgba(160,190,235,0.75)'; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+    for (let i = 0; i < 9; i++) {
+      const x = -30 + i * 7.5 + (i % 2) * 2, ph2 = (t * 2.4 + i * 0.37) % 1, y0 = -8 + ph2 * 34;
+      ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x - 2, y0 + 8); ctx.stroke();
+    }
+    // billows
+    const puffs = [[-30, -22, 15, B2], [-16, -38, 17, B2], [4, -44, 19, B1], [24, -38, 16, B1], [34, -22, 14, B1], [22, -12, 16, B2], [-2, -10, 18, B2], [-20, -10, 15, B2], [0, -26, 26, B1]];
+    puffs.forEach(([x, y, r, c], i) => ell(ctx, x + Math.sin(t * 1.6 + i) * 1.2, y + Math.cos(t * 1.3 + i * 2) * 1, r, r * 0.85, c));
+    ctx.save(); ctx.globalAlpha = 0.5; ell(ctx, -6, -44, 13, 7, B3); ell(ctx, 20, -42, 9, 5, B3); ctx.restore();
+    ell(ctx, 0, -8, 30, 6, DK);
+    // internal lightning flicker
+    if (flick > 0) {
+      ctx.save(); ctx.globalAlpha = 0.25 * flick; ell(ctx, 0, -26, 30, 20, '#e9e2ff'); ctx.restore();
+      ctx.strokeStyle = `rgba(240,235,255,${flick})`; ctx.lineWidth = 1.6; ctx.beginPath();
+      ctx.moveTo(-26, -40); ctx.lineTo(-20, -32); ctx.lineTo(-25, -28); ctx.lineTo(-17, -18); ctx.stroke();
+    }
+    // face
+    const fx = 8;
+    ctx.fillStyle = '#17112a'; ctx.beginPath(); ctx.moveTo(fx - 14, -35); ctx.lineTo(fx + 14, -29); ctx.lineTo(fx + 14, -36); ctx.lineTo(fx - 14, -42); ctx.closePath(); ctx.fill();
+    ctx.shadowColor = '#fff3a0'; ctx.shadowBlur = 8 + flick * 8;
+    ell(ctx, fx - 8, -29, 4.2, 3, '#fff6b8'); ell(ctx, fx + 9, -26, 4.2, 3, '#fff6b8');
+    ctx.shadowBlur = 0;
+    ell(ctx, fx - 7.5, -29, 1.5, 2.2, '#2a1a05'); ell(ctx, fx + 9.5, -26, 1.5, 2.2, '#2a1a05');
+    // brow slashes over the eyes
+    ctx.strokeStyle = '#17112a'; ctx.lineWidth = 3.4;
+    ctx.beginPath(); ctx.moveTo(fx - 15, -37); ctx.lineTo(fx - 3, -30); ctx.moveTo(fx + 16, -33); ctx.lineTo(fx + 3, -28); ctx.stroke();
+    // mouth
+    const mo = 2 + gulp * 8 + (p.punch > 0 ? 3 : 0);
+    ctx.fillStyle = '#120a1f'; ctx.beginPath(); ctx.moveTo(fx - 8, -16); ctx.quadraticCurveTo(fx + 2, -16 - mo * 1.2, fx + 12, -15); ctx.quadraticCurveTo(fx + 2, -16 + mo, fx - 8, -16); ctx.fill();
+    ctx.strokeStyle = '#17112a'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(fx + 2, -9 - mo * 0.4, 12, Math.PI * 1.2, Math.PI * 1.8); ctx.stroke();
+    // lightning jab to the hand
+    if (p.punch > 0 && p.hand) {
+      const [hx, hy] = handTarget(p, 30, -26), sx = 24, sy = -22;
+      const dx = hx - sx, dy = hy - sy, len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len, seg = 9;
+      const path = [[sx, sy]];
+      for (let i = 1; i < seg; i++) { const j = (i % 2 ? 1 : -1) * 7 * Math.sin(t * 60 + i * 3.1); path.push([sx + dx * i / seg + nx * j, sy + dy * i / seg + ny * j]); }
+      path.push([hx, hy]);
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      [['rgba(150,120,255,0.55)', 8], ['#e9e2ff', 3.6], ['#ffffff', 1.5]].forEach(([c, w]) => {
+        ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); path.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+      });
+      ell(ctx, hx, hy, 6 + Math.sin(t * 50) * 1.5, 6, 'rgba(255,255,255,0.8)');
+    }
+    ctx.restore();
+  },
+  drawRevert(ctx, t) {  // one small, sad drizzle cloud
+    const sc = Math.sin(t * 10), hop = -Math.abs(sc) * 2;
+    ctx.save(); ctx.translate(0, hop);
+    ctx.strokeStyle = '#8fb4e8'; ctx.lineWidth = 1.1; ctx.lineCap = 'round';
+    for (let i = 0; i < 3; i++) { const y0 = -9 + ((t * 3 + i * 0.33) % 1) * 9; ctx.beginPath(); ctx.moveTo(-4 + i * 4, y0); ctx.lineTo(-4.6 + i * 4, y0 + 2.4); ctx.stroke(); }
+    ell(ctx, -4, -17, 5, 4, '#9a93ad'); ell(ctx, 3, -19, 6, 5, '#aaa3bd'); ell(ctx, 8, -16, 4.5, 3.6, '#9a93ad'); ell(ctx, 1, -15, 9, 3.6, '#b5aec7');
+    ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(1, -18, 0.9, 0, Math.PI * 2); ctx.arc(6, -18, 0.9, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#222'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(3.5, -13.5, 2, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
     ctx.restore();
   },
 });
