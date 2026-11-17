@@ -83,6 +83,7 @@ const Game = {
     this.startCity();
   },
   onMonsterDefeated() {
+    if (this.state !== 'play') return;
     this.lives--;
     if (this.lives > 0) { this.monster.reset(rand(200, W - 200)); }
     else { this.setState('gameover'); Sfx.play('over'); this.saveHi(); this.startBoardCheck(); }
@@ -160,7 +161,7 @@ const Game = {
   },
   stunMult(kind) { return kind === 'window' && this.windowStun > 0 ? 0 : 1; },
   fire(x, y, kind) {
-    const m = this.monster; if (!m || m.defeated) return;
+    const m = this.monster; if (!m || m.defeated || this.state !== 'play') return;
     const tx = m.x + rand(-12, 12), ty = m.y - m.h * 0.5 + rand(-18, 18);
     const sp = kind === 'shell' ? 300 : 330;
     const a = Math.atan2(ty - y, tx - x);
@@ -329,6 +330,8 @@ const Game = {
             const m = this.monster;
             this.bonus = { hp: Math.ceil(m.hp) * 10, time: Math.max(0, Math.round(150 - this.levelT)) * 20 };
             this.addScore(this.bonus.hp + this.bonus.time);
+            m.hp = Math.max(m.hp, 1);   // victory is final: cease fire, clear every shot in the air
+            this.shots = [];
             this.saveHi(); Sfx.play('clear'); this.setState('clear');
           }
         }

@@ -72,7 +72,7 @@ class Monster {
     if (C && Input.hit('punch') && this.punchCd <= 0 && this.dashT <= 0) this.punch(game, U, D);
     if (C && Input.hit('special') && this.specialCd <= 0 && this.def.special) { this.def.special(this, game); this.specialCd = this.s.specialCd; }
     this.x = clamp(this.x, 16, W - 16);
-    if (this.hp <= 0) this.defeat(game);
+    if (this.hp <= 0 && game.state === 'play') this.defeat(game);
   }
 
   updateWalk(dt, game, L, R, U, D, J, Jhit) {
@@ -200,7 +200,7 @@ class Monster {
     else if (this.def.id === 'chronomunch') Sfx.play('chomp');
   }
   takeHit(dmg, game, force = false) {
-    if (this.defeated) return;
+    if (this.defeated || game.state !== 'play') return;   // no damage once a city is won (or before it starts)
     if (!force && !this.vulnerable) return;
     this.hp -= dmg * this.s.armor; this.hurtT = 0.3;
     Sfx.play('hurt');
