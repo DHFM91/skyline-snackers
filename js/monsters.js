@@ -931,3 +931,179 @@ registerMonster({
     ctx.restore();
   },
 });
+
+/* ---------- 7. ELDER STATESMAN (original generic caricature of the permanent ruling class) ---------- */
+registerMonster({
+  id: 'statesman', name: 'ELDER STATESMAN', tagline: 'Has held this seat since before the seat was invented.',
+  homage: 'The permanent ruling class',
+  move: 'CLIMBS', specialName: 'FILIBUSTER', specialDesc: 'Plants himself and talks: a wave of red tape stuns the army and snipers, and he heals',
+  passive: 'Incumbency: every snack eaten stacks +8% punch damage (max 5), and the longer he stays in office the less he flinches',
+  bars: { STR: 3, SPD: 2, REACH: 3, TOUGH: 4 },
+  stats: { w: 46, h: 90, speed: 100, climb: 76, jump: 560, dmg: 1.75, reach: 40, hitR: 24, punchCd: 0.4,
+    maxHp: 125, armor: 0.92, armY: 0.58, specialCd: 8 },
+  portraitY: 0.88,
+  tick(m, dt, game) {
+    const base = m.def.stats;
+    if (!m.inc) { m.inc = { n: 0, t: 0, prevEat: 0 }; m.s = Object.assign({}, base); }
+    const inc = m.inc, fil = m.fil;
+    if (fil) {
+      fil.t += dt;
+      m.eatT = 0.35;                       // reuse the chomping pose: jowls flapping
+      const front = fil.t * 420;
+      for (const side of [-1, 1]) {
+        for (let i = 0; i < 4; i++) {
+          const x = m.x + side * (front + rand(-14, 14)), y = GROUND - rand(4, 70);
+          FX.add({ x, y, vx: side * rand(60, 180), vy: rand(-60, 20), grav: 40, life: rand(0.6, 1.1), size: rand(5, 9),
+            color: pick(['#fffdf4', '#f3ead2', '#fffdf4']), rot: rand(0, 6), vr: rand(-6, 6), ground: false });
+        }
+        if (chance(0.7)) {
+          const x0 = m.x + side * front, y0 = GROUND - rand(10, 60), v = side * rand(90, 200);
+          for (let k = 0; k < 5; k++) FX.add({ x: x0 + side * k * 4, y: y0, vx: v, vy: 0, grav: 20, life: rand(0.5, 0.9), size: 3.2,
+            color: k % 2 ? '#c0392b' : '#a52c20', ground: false });
+        }
+      }
+      if (fil.t >= fil.dur) m.fil = null;
+    } else if (m.eatT > inc.prevEat + 0.01) {
+      if (inc.n < 5) { inc.n++; FX.text(m.x, m.y - m.h - 12, 'TERM +' + inc.n, '#ffd37a', 12); }
+      inc.t = 6;
+    }
+    inc.prevEat = m.eatT;
+    if (inc.n > 0) { inc.t -= dt; if (inc.t <= 0) { inc.n--; inc.t = 6; } }
+    const slow = m.fil ? 0.12 : 1;
+    m.s.speed = base.speed * slow; m.s.climb = base.climb * slow;
+    m.s.dmg = base.dmg * (1 + 0.08 * inc.n);
+    m.s.armor = base.armor * (1 - 0.02 * inc.n);
+  },
+  special(m, game) {
+    m.fil = { t: 0, dur: 1 };
+    m.vx = 0;
+    for (const wk of game.walkers) if (!wk.air) { wk.stun = Math.max(wk.stun || 0, 3); if (wk.kind === 'civ') wk.panic = true; }
+    for (const tk of game.tanks) tk.stun = Math.max(tk.stun || 0, 3);
+    for (const h of game.helis) if (!h.falling) h.stun = Math.max(h.stun || 0, 3);
+    game.windowStun = Math.max(game.windowStun, 3);
+    m.heal(20);
+    const cy = m.y - m.h * 0.6;
+    for (let i = 0; i < 3; i++) setTimeout(() => FX.ring(m.x, cy, 240, '#c0392b', 0.8), i * 130);
+    FX.text(m.x, cy - 46, 'FILIBUSTER!', '#ffd2c8', 18);
+    game.shake = Math.max(game.shake, 6);
+    Sfx.play('roar');
+  },
+  draw(ctx, p) {
+    const t = p.t, NAVY = '#2b2d5c', NAVY2 = '#1c1e41', SHIRT = '#f6f3ec', RED = '#c0392b', OL = '#79883f', OL2 = '#4b5a26';
+    const SKIN = '#e7c6a5', SKIN2 = '#c99f7d', HAIR = '#f4f3ee', NAIL = '#d8c25a', SHOE = '#141414';
+    const sw = p.walk ? Math.sin(p.walkPhase) : 0;
+    const bob = p.walk ? Math.abs(Math.cos(p.walkPhase)) * 1.5 : Math.sin(t * 1.5) * 0.7;
+    const LEAN = p.climb ? 0.3 : 0.38, hipX = sw * 1.2, hipY = p.climb ? -47 : p.air ? -44 : -40;
+    const cL = Math.cos(LEAN), sL = Math.sin(LEAN);
+    const T = (lx, ly) => [hipX + lx * cL - ly * sL, hipY + lx * sL + ly * cL];
+    const claw = (x, y, ang, curl) => {
+      ell(ctx, x, y, 4.2, 3.6, SKIN);
+      ctx.lineCap = 'round';
+      for (let i = 0; i < 4; i++) {
+        const a = ang + (i - 1.5) * 0.34, x1 = x + Math.cos(a) * 5.5, y1 = y + Math.sin(a) * 5.5;
+        const b = a + curl, x2 = x1 + Math.cos(b) * 4.5, y2 = y1 + Math.sin(b) * 4.5;
+        ctx.strokeStyle = SKIN; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        const c = b + curl * 0.8;
+        ctx.strokeStyle = NAIL; ctx.lineWidth = 1.7; ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 + Math.cos(c) * 5, y2 + Math.sin(c) * 5); ctx.stroke();
+      }
+    };
+    const arm = (sx, sy, hx, hy, col, curl) => {
+      limb(ctx, sx, sy, hx, hy, 7.5, col, -0.2);
+      claw(hx, hy, Math.atan2(hy - sy, hx - sx), curl);
+    };
+    ctx.save(); ctx.translate(0, -bob);
+    const fidget = 0.75 + 0.1 * Math.sin(t * 3);
+    // back arm
+    const [bsx, bsy] = T(-9, -30);
+    const bh = p.climb ? [10, -96 - Math.sin(p.climbPhase) * 6] : [bsx + 18 - sw * 5, hipY - 8 + Math.sin(t * 2) * 2];
+    arm(bsx, bsy, bh[0], bh[1], NAVY2, fidget);
+    // legs: wide, bent crouch
+    let f1, f2;
+    if (p.climb) { f1 = [-10, -8 + Math.sin(p.climbPhase) * 6]; f2 = [14, -12 - Math.sin(p.climbPhase) * 6]; }
+    else if (p.air) { f1 = [-12, -8]; f2 = [14, -14]; }
+    else { f1 = [-17 - sw * 7, -Math.max(0, -sw) * 3]; f2 = [17 + sw * 7, -Math.max(0, sw) * 3]; }
+    limb(ctx, hipX - 5, hipY + 3, f1[0], f1[1] - 2, 11, NAVY2, 0.25);
+    limb(ctx, hipX + 5, hipY + 3, f2[0], f2[1] - 2, 11, NAVY, -0.25);
+    ell(ctx, f1[0] + 4, f1[1] - 2, 8, 3.4, SHOE);
+    ell(ctx, f2[0] + 4, f2[1] - 2, 8, 3.4, SHOE);
+    // torso (leaning forward)
+    ctx.save(); ctx.translate(hipX, hipY); ctx.rotate(LEAN);
+    ctx.fillStyle = NAVY; ctx.beginPath(); ctx.moveTo(-12, 2); ctx.lineTo(12, 2); ctx.lineTo(13, -26);
+    ctx.quadraticCurveTo(12, -37, 0, -38); ctx.quadraticCurveTo(-12, -37, -13, -26); ctx.closePath(); ctx.fill();
+    ell(ctx, -9, -30, 7, 6, NAVY2);
+    ctx.fillStyle = SHIRT; ctx.beginPath(); ctx.moveTo(-3.5, -36); ctx.lineTo(4.5, -36); ctx.lineTo(0.5, -10); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = RED; ctx.beginPath(); ctx.moveTo(-0.5, -35); ctx.lineTo(2.5, -35); ctx.lineTo(3.4, -16); ctx.lineTo(1, -10); ctx.lineTo(-1.4, -16); ctx.closePath(); ctx.fill();
+    const lattice = (pts) => {
+      ctx.save(); ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath();
+      ctx.fillStyle = OL; ctx.fill(); ctx.clip();
+      ctx.strokeStyle = OL2; ctx.lineWidth = 0.9; ctx.beginPath();
+      for (let k = -40; k < 40; k += 5) { ctx.moveTo(k, -40); ctx.lineTo(k + 40, 0); ctx.moveTo(k + 40, -40); ctx.lineTo(k, 0); }
+      ctx.stroke(); ctx.restore();
+      ctx.strokeStyle = OL2; ctx.lineWidth = 1; ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath(); ctx.stroke();
+    };
+    lattice([[-10, -37], [-3.6, -36], [-5.5, -2], [-12.5, -2]]);
+    lattice([[4.6, -36], [10.5, -37], [12.5, -2], [6, -2]]);
+    // sash at the waist, knot and patterned tail
+    ctx.fillStyle = OL; ctx.fillRect(-13, -8, 26, 6);
+    ctx.fillStyle = OL2; ctx.fillRect(-13, -8, 26, 1.2); ctx.fillRect(-13, -3.2, 26, 1.2);
+    ell(ctx, 3, -5, 3.6, 3.6, OL2);
+    ctx.save(); ctx.translate(3, -4); ctx.rotate(-LEAN + Math.sin(t * 2) * 0.05);
+    ctx.fillStyle = OL; ctx.beginPath(); ctx.moveTo(-2.8, 0); ctx.lineTo(2.8, 0); ctx.lineTo(3.4, 20); ctx.lineTo(0, 23); ctx.lineTo(-3.4, 20); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = OL2; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = OL2;
+    for (let k = 0; k < 4; k++) { const y = 4 + k * 4.6; ctx.beginPath(); ctx.moveTo(0, y - 2.1); ctx.lineTo(2, y); ctx.lineTo(0, y + 2.1); ctx.lineTo(-2, y); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+    // head
+    const jaw = p.eat ? Math.abs(Math.sin(t * 28)) * 3 : 0.4 + 0.4 * Math.sin(t * 2);
+    ctx.translate(5, -45); ctx.rotate(-0.24);
+    ell(ctx, 0, 9, 5, 5, SKIN2);
+    ell(ctx, -6, -3, 9, 10, HAIR);
+    ctx.strokeStyle = HAIR; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-4, -10); ctx.quadraticCurveTo(-12, -11, -17, -5); ctx.moveTo(-5, -4); ctx.quadraticCurveTo(-13, -3, -17, 3); ctx.stroke();
+    ell(ctx, 0, 0, 10.5, 12, SKIN);
+    ell(ctx, 4, 7, 9, 7, SKIN);
+    ell(ctx, 3, 9 + jaw * 0.8, 8, 5.4, SKIN);
+    ell(ctx, 1, 12 + jaw * 0.8, 6, 2.6, SKIN2);
+    ell(ctx, -1, -8, 10, 5.5, HAIR);
+    ell(ctx, -5.5, 2, 2.6, 3.6, SKIN2);
+    ell(ctx, 11.5, 2.5, 3.8, 3.2, SKIN2);
+    ell(ctx, 5.5, -1.5, 2.8, 2.2, '#fff'); ell(ctx, 6.6, -1.2, 1.2, 1.2, '#222');
+    ctx.strokeStyle = SKIN2; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(2.5, -2.4); ctx.lineTo(8.5, -3); ctx.stroke();
+    [['#8c8c8c', 4.6], [HAIR, 3.2]].forEach(([c, w]) => {
+      ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(0, -7.5); ctx.lineTo(5, -5.5); ctx.lineTo(10.5, -2.8); ctx.stroke();
+    });
+    ctx.strokeStyle = SKIN2; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(9, 5); ctx.quadraticCurveTo(7, 9, 9.5, 12); ctx.stroke();
+    if (p.eat) { ell(ctx, 7, 9.5 + jaw * 0.5, 3.8, 0.8 + jaw * 0.9, '#4a1515'); }
+    else { ctx.strokeStyle = '#6b2a24'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(1.5, 11 + jaw * 0.4); ctx.quadraticCurveTo(6.5, 6.5, 11.5, 10.5 + jaw * 0.4); ctx.stroke(); }
+    ctx.restore();
+    // front arm
+    const [fsx, fsy] = T(9, -30);
+    let rest;
+    if (p.climb) rest = [26, -102 + Math.sin(p.climbPhase) * 6];
+    else if (p.eat) { const m = T(18, -38); rest = [m[0] + 3, m[1] + 4]; }
+    else rest = [fsx + 20 - sw * 6, hipY - 10 + Math.sin(t * 2 + 1) * 2];
+    const [hx, hy] = handTarget(p, rest[0], rest[1]);
+    arm(fsx, fsy, hx, hy, NAVY, p.punch > 0 ? 0.25 : fidget);
+    ctx.restore();
+  },
+  drawRevert(ctx, t) {  // a frail old man, hobbling away behind his walker
+    const st = Math.sin(t * 8), hop = Math.abs(st) * 1.2;
+    ctx.save(); ctx.translate(0, -hop);
+    ctx.strokeStyle = '#9aa0a8'; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(8, -14); ctx.lineTo(8, -2 + hop); ctx.moveTo(14, -14); ctx.lineTo(14, -2 + hop); ctx.moveTo(7, -14); ctx.lineTo(15, -14); ctx.stroke();
+    ctx.fillStyle = '#d6c64a'; ctx.beginPath(); ctx.arc(8, -1 + hop, 1.2, 0, Math.PI * 2); ctx.arc(14, -1 + hop, 1.2, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#2b2d5c'; ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(-2 + st * 2.5, hop); ctx.moveTo(1, -11); ctx.lineTo(2 - st * 2.5, hop); ctx.stroke();
+    ctx.fillStyle = '#141414'; ctx.fillRect(-4 + st * 2.5, -1 + hop, 4, 1.6); ctx.fillRect(0 - st * 2.5, -1 + hop, 4, 1.6);
+    ctx.save(); ctx.translate(0, -11); ctx.rotate(0.45);
+    ctx.fillStyle = '#2b2d5c'; ctx.fillRect(-3.5, -12, 7, 12);
+    ctx.fillStyle = '#c0392b'; ctx.fillRect(0.5, -11, 1.2, 6);
+    ctx.restore();
+    ctx.strokeStyle = '#2b2d5c'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(3, -19); ctx.lineTo(9, -14); ctx.stroke();
+    ell(ctx, 9, -14, 1.6, 1.6, '#e7c6a5');
+    ell(ctx, 5.5, -25.5, 3.6, 3.8, '#e7c6a5');
+    ell(ctx, 3.8, -27.5, 3.2, 2.4, '#f4f3ee');
+    ctx.strokeStyle = '#f4f3ee'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(6.5, -27.6); ctx.lineTo(9, -26.6); ctx.stroke();
+    ctx.restore();
+  },
+});
