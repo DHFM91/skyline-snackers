@@ -962,11 +962,13 @@ function drawStatesmanRig(ctx, p) {
   const t = p.t || 0, IW = 309, IH = 420, K = 104 / IH;
   // pivots (image px): elbow of the reaching arm, neck, hips
   const ELB = [219, 182], NECK = [172, 104], HIPL = [81, 247], HIPR = [211, 247];
-  let bodyRot = 0, bodyDY = 0, headRot = Math.sin(t * 1.7) * 0.03, armRot = Math.sin(t * 2.3) * 0.05, armDX = 0, armDY = 0;
-  let armSX = 1, legL = 0, legR = 0, sy = 1 + Math.sin(t * 2.4) * 0.012;
+  // idle: a menacing sway, head bob and grasping claw (visible even on the roster's slow idle clock)
+  let bodyRot = Math.sin(t * 3.1) * 0.025, bodyDY = Math.sin(t * 4.2) * 6, headRot = Math.sin(t * 3.7) * 0.07;
+  let armRot = Math.sin(t * 5.3) * 0.16, armDX = 0, armDY = 0;
+  let armSX = 1, legL = Math.sin(t * 3.1) * 0.03, legR = -Math.sin(t * 3.1) * 0.03, sy = 1 + Math.sin(t * 4.2) * 0.02;
   if (p.walk) {
     const k = Math.sin(p.walkPhase || 0);
-    legL = k * 0.16; legR = -k * 0.16; bodyDY = -Math.abs(k) * 14; bodyRot = k * 0.03; headRot += k * 0.04; armRot += k * 0.12;
+    legL = k * 0.16; legR = -k * 0.16; bodyDY = -Math.abs(k) * 14; bodyRot = k * 0.03; headRot = k * 0.04; armRot = k * 0.12;
   }
   if (p.air) { legL = -0.14; legR = 0.14; armRot -= 0.35; }
   if (p.climb) {
