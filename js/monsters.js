@@ -574,6 +574,7 @@ registerMonster({
     [[-22, -52, 2], [-16, -64, 1.6], [-26, -44, 1.5], [18, -66, 1.4], [24, -56, 1.8], [-8, -70, 1.3]].forEach(([x, y, r]) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); });
     // generic label panel with barcode
     ctx.save(); ctx.translate(0, -52);
+    if (ctx.getTransform().a < 0) ctx.scale(-1, 1);   // printed label: always reads the right way round
     ctx.fillStyle = LBL; ctx.fillRect(-10, -14, 20, 28);
     ctx.strokeStyle = INK; ctx.lineWidth = 0.8; ctx.strokeRect(-10, -14, 20, 28);
     ctx.fillStyle = INK; ctx.font = 'bold 6px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
