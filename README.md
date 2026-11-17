@@ -28,8 +28,9 @@ big play (a hop in place barely dents it). Slamming the street flattens people n
 
 **On a phone or tablet** the game switches to touch controls automatically: a drag joystick on the
 left (move, climb or fly), and **PUNCH**, **JUMP** and **SPECIAL** buttons on the right, plus a pause
-button. Tap to start, tap a monster to pick it and tap it again to play. Landscape gives the
-biggest view; in portrait the game sits on top with the controls underneath.
+button. Tap to start, tap a monster to pick it and tap it again to play. The game is landscape
+only on phones: held upright, it shows a "rotate your phone" prompt and pauses. On Android it also goes
+fullscreen and locks to landscape on your first tap.
 
 ## How a city works
 

@@ -22,6 +22,14 @@ const TouchPad = {
     if (IS_TOUCH) this.enable();
     // A real finger on the screen also turns touch mode on (covers laptops with touchscreens).
     addEventListener('pointerdown', e => { if (e.pointerType === 'touch' && !IS_TOUCH) { IS_TOUCH = true; this.enable(); } }, true);
+    // Where the browser allows it (Android Chrome), go fullscreen and lock to landscape on the first touch.
+    // iPhone Safari can't lock orientation, so there the rotate prompt does the job.
+    const lockLandscape = () => {
+      const el = document.documentElement;
+      if (!IS_TOUCH || !screen.orientation || !screen.orientation.lock || !el.requestFullscreen || document.fullscreenElement) return;
+      el.requestFullscreen().then(() => screen.orientation.lock('landscape')).catch(() => {});
+    };
+    addEventListener('pointerup', lockLandscape, true);
 
     // --- joystick ---
     const st = this.stick;

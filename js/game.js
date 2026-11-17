@@ -9,6 +9,8 @@ let RES = 1;
 function resize() {
   // On a phone held upright, fill the width and leave room below for the controls.
   const portrait = IS_TOUCH && innerHeight > innerWidth;
+  document.getElementById('rotate').hidden = !portrait;
+  try { if (portrait && Game.state === 'play') Game.paused = true; } catch (e) { /* Game not created yet on first call */ }
   document.body.classList.toggle('portrait', portrait);
   const s = portrait ? innerWidth / W : Math.min(innerWidth / W, innerHeight / H);
   RES = clamp(s * (devicePixelRatio || 1), 1, 3);
@@ -665,9 +667,10 @@ const Game = {
     this.text(TITLE, 0, wob, 64, '#ffe14d', 'center', 8);
     ctx.restore();
     this.text(SUBTITLE, W / 2, 222, 18, '#7dffb0', 'center', 4);
-    this.text('⚠ PLAYS MUCH BETTER ON DESKTOP THAN MOBILE', W / 2, 260, 14, '#ffb23a', 'center', 4);
-    if (Math.sin(t * 5) > -0.3) this.text(T('PRESS ENTER', 'TAP TO START'), W / 2, 310, 22, '#fff', 'center', 5);
-    this.text('HIGH SCORE: ' + this.hi, W / 2, 345, 12, '#ccc', 'center', 3);
+    this.text('⚠ PLAYS MUCH BETTER', W / 2, 270, 36, '#ffb23a', 'center', 6);
+    this.text('ON DESKTOP THAN MOBILE', W / 2, 310, 36, '#ffb23a', 'center', 6);
+    if (Math.sin(t * 5) > -0.3) this.text(T('PRESS ENTER', 'TAP TO START'), W / 2, 356, 22, '#fff', 'center', 5);
+    this.text('HIGH SCORE: ' + this.hi, W / 2, 384, 12, '#ccc', 'center', 3);
     this.text('PARODY GAME -- ALL CHARACTERS ARE ORIGINAL DESIGNS OR PUBLIC DOMAIN', W / 2, H - 14, 9, '#aaa', 'center', 2);
   },
   drawSelect() {

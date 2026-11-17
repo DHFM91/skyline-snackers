@@ -43,10 +43,18 @@
   /* invisible text field that summons the phone keyboard for initials */
   #kbd { position: fixed; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; font-size: 16px; }
   body.touch #kbd { -webkit-user-select: text; user-select: text; touch-action: auto; }
+  /* landscape only on phones: portrait shows a rotate prompt instead of the game */
+  #rotate { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 22px; background: #07070b; color: #ffe14d; font: 22px "Bungee", Impact, "Arial Black", sans-serif; text-align: center; padding: 24px; }
+  #rotate[hidden] { display: none; }
+  #rotate small { color: #ccc; font-size: 13px; }
+  #rotate .phone { width: 54px; height: 92px; border: 4px solid #ffe14d; border-radius: 10px; animation: turn 1.8s ease-in-out infinite; }
+  @keyframes turn { 0%, 25% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
+<div id="rotate" hidden><div class="phone"></div><div>Rotate your phone</div><small>Skyline Snackers plays in landscape</small></div>
 <input id="kbd" type="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done" aria-label="Type your initials">
 <div id="touch" hidden>
   <div id="stick"><div id="knob"></div></div>
@@ -57,12 +65,12 @@
   </div>
   <button class="tb" id="b-pause" data-act="pause">II</button>
 </div>
-<script src="js/core.js?v=28"></script>
-<script src="js/world.js?v=28"></script>
-<script src="js/monsters.js?v=28"></script>
-<script src="js/leaderboard.js?v=28"></script>
-<script src="js/game.js?v=28"></script>
-<script src="js/touch.js?v=28"></script>
+<script src="js/core.js?v=29"></script>
+<script src="js/world.js?v=29"></script>
+<script src="js/monsters.js?v=29"></script>
+<script src="js/leaderboard.js?v=29"></script>
+<script src="js/game.js?v=29"></script>
+<script src="js/touch.js?v=29"></script>
 <script src="/visits.js" async></script>
 </body>
 </html>
