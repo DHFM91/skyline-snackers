@@ -936,8 +936,8 @@ registerMonster({
 registerMonster({
   id: 'statesman', name: 'ELDER STATESMAN', tagline: 'Has held this seat since before the seat was invented.',
   homage: 'The permanent ruling class',
-  move: 'CLIMBS', specialName: 'FILIBUSTER', specialDesc: 'Plants himself and talks: a wave of red tape stuns the army and snipers, and he heals',
-  passive: 'Incumbency: every snack eaten stacks +8% punch damage (max 5), and the longer he stays in office the less he flinches',
+  move: 'CLIMBS', specialName: 'FILIBUSTER', specialDesc: 'Talks forever: red tape stuns the army, and he heals',
+  passive: 'Incumbency: each snack makes him hit harder (stacks, fades)',
   bars: { STR: 3, SPD: 2, REACH: 3, TOUGH: 4 },
   stats: { w: 46, h: 90, speed: 100, climb: 76, jump: 560, dmg: 1.75, reach: 40, hitR: 24, punchCd: 0.4,
     maxHp: 125, armor: 0.92, armY: 0.58, specialCd: 8 },
