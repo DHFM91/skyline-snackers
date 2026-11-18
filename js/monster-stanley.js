@@ -182,7 +182,7 @@
     bars: { STR: 2, SPD: 3, REACH: 5, TOUGH: 2 },
     stats: { w: 44, h: 96, speed: 128, climb: 86, jump: 560, dmg: 1.6, reach: 30, hitR: 18, punchCd: 0.34,
       maxHp: 105, armor: 0.95, armY: 0.52, glide: true, specialCd: 9 },
-    portraitY: 1.15,
+    portraitY: 1.03,
     punch(m, game, dir) {
       // up close to a snack: grab it by hand. Otherwise: a short burst.
       const reach = nearbySnack(m, game, dir);
