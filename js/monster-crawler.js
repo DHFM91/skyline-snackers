@@ -475,11 +475,11 @@
     id: 'crawler', name: 'AUTOMATED SOLUTION', tagline: 'It does not stop. It does not snack-break. (It does snack.)',
     homage: 'Every robot uprising movie, ever',
     move: 'CLIMBS', specialName: 'TARGET LOCK', specialDesc: 'The eye paints up to 6 targets, then homing micro-missiles hit every one',
-    passive: 'Armoured chassis: takes 40% less damage, and self-repair slowly restores health',
+    passive: 'Armoured chassis: 40% less damage, slowly self-repairs',
     bars: { STR: 4, SPD: 1, REACH: 3, TOUGH: 5 },
     stats: { w: 72, h: 58, speed: 76, climb: 58, jump: 430, dmg: 2.4, reach: 40, hitR: 19, punchCd: 0.62,
       maxHp: 175, armor: 0.6, armY: 0.5, specialCd: 9 },
-    portraitY: 0.62,
+    portraitY: 0.6,
     special(m, game) {
       if (m.beam) return;
       const targets = acquire(m, game);

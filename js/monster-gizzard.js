@@ -336,12 +336,12 @@
     id: 'gizzard', name: 'GIZZARD', tagline: 'The BIG DEAD Dog.',
     homage: 'Every full moon, ever',
     move: 'CLIMBS', specialName: 'BLOOD HOWL',
-    specialDesc: 'Howls up a red frenzy for 5s: faster, hits harder, punches quicker, and the crowd panics',
+    specialDesc: 'Howls up a 5s red frenzy: faster, harder, quicker punches',
     passive: 'Scavenger: heals 4 extra from every snack',
     bars: { STR: 4, SPD: 4, REACH: 2, TOUGH: 3 },
     stats: { w: 44, h: 96, speed: 152, climb: 104, jump: 780, dmg: 2.1, reach: 34, hitR: 20, punchCd: 0.28,
       maxHp: 110, armor: 0.96, armY: 0.6, specialCd: 9 },
-    portraitY: 1.05,
+    portraitY: 0.8,
     tick(m, dt, game) {
       const base = m.def.stats;
       if (!m.gz) { m.gz = { fz: 0, howl: 0, prevEat: 0, acc: 0, panicT: 0 }; m.s = Object.assign({}, base); }
