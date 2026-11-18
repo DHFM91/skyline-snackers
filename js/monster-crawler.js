@@ -475,10 +475,10 @@
     id: 'crawler', name: 'AUTOMATED SOLUTION', tagline: 'It does not stop. It does not snack-break. (It does snack.)',
     homage: 'Every robot uprising movie, ever',
     move: 'CLIMBS', specialName: 'TARGET LOCK', specialDesc: 'The eye paints up to 6 targets, then homing micro-missiles hit every one',
-    passive: 'Armoured chassis: 40% less damage, slowly self-repairs',
+    passive: 'Armoured chassis: 30% less damage, slowly self-repairs',
     bars: { STR: 4, SPD: 1, REACH: 3, TOUGH: 5 },
     stats: { w: 72, h: 58, speed: 76, climb: 58, jump: 430, dmg: 2.4, reach: 40, hitR: 19, punchCd: 0.62,
-      maxHp: 175, armor: 0.6, armY: 0.5, specialCd: 9 },
+      maxHp: 160, armor: 0.7, armY: 0.5, specialCd: 9 },
     portraitY: 0.6,
     special(m, game) {
       if (m.beam) return;
@@ -490,7 +490,7 @@
       Sfx.play('blink');
     },
     tick(m, dt, game) {
-      if (!m.defeated && game.state === 'play' && m.hp > 0 && m.hp < m.s.maxHp) m.hp = Math.min(m.s.maxHp, m.hp + 0.6 * dt);
+      if (!m.defeated && game.state === 'play' && m.hp > 0 && m.hp < m.s.maxHp) m.hp = Math.min(m.s.maxHp, m.hp + 0.3 * dt);
       const L = m.beam;
       if (!L || !L.crawler) return;
       if (m.defeated) { m.beam = null; return; }

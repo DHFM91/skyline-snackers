@@ -178,7 +178,7 @@ class Building {
     this.shakeT = 0; this.destroyed = 0; this.dmgTaken = 0; this.maxHp = floors * cols * 3;
     this.rubble = []; for (let i = 0; i < 9; i++) this.rubble.push(rng());
     this.cells = [];
-    const pSol = Math.min(0.13, 0.035 * d);
+    const pSol = Math.min(0.24, 0.035 * d);
     for (let f = 0; f < floors; f++) {
       const row = [];
       for (let c = 0; c < cols; c++) {

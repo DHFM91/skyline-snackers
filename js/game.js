@@ -22,6 +22,9 @@ addEventListener('resize', resize); resize();
 const TITLE = 'SKYLINE SNACKERS';
 const SUBTITLE = 'AN ELDRITCH WORLD TOUR';
 const START_LIVES = 1;   // lives per game (and per continue)
+// Difficulty: climbs every city, and each lap of the world tour starts much harder.
+const DIFF_PER_CITY = 0.5, DIFF_PER_TOUR = 2, DIFF_MAX = 9;
+const CITY_REFILL = 0.3;    // health carries over between cities; moving on only tops up this share of max HP
 const PUNCH_CENTER = 0.75;  // punch damage to the window under the fist (x monster dmg)
 const PUNCH_SPLASH = 0.5;   // punch damage to the 4 windows around it (plus-shaped cross)
 const PUNCH_AOE_R  = 2.2;   // blast radius vs tanks/helis, as a multiple of the monster's hitR
@@ -46,10 +49,15 @@ const Game = {
     this.startCity();
   },
   startCity() {
-    this.d = Math.min(4, 1 + (this.cityIdx / Math.max(1, CITIES.length - 1)) * 1.6 + (this.tour - 1) * 0.9);   // ramps over one tour, then each loop starts harder
+    this.d = Math.min(DIFF_MAX, 1 + this.cityIdx * DIFF_PER_CITY + (this.tour - 1) * DIFF_PER_TOUR);
     this.buildLevel();
+    const prev = this.carryHp ? this.monster : null;
+    this.carryHp = false;
     this.monster = new Monster(MONSTERS[this.sel]);
     this.monster.reset(W / 2);
+    if (prev && prev.def === this.monster.def) {   // wounds carry over, with a small top-up
+      const m = this.monster; m.hp = Math.min(m.s.maxHp, Math.max(1, prev.hp) + m.s.maxHp * CITY_REFILL);
+    }
     this.walkers = []; this.tanks = []; this.helis = []; this.shots = [];
     FX.clear();
     this.spawn = { civ: 0.5, sol: 4, tank: 14, heli: 10 };
@@ -80,7 +88,7 @@ const Game = {
     this.stars = []; for (let i = 0; i < 70; i++) this.stars.push({ x: rng() * W, y: rng() * 300, s: rng() * 1.6 + 0.4, p: rng() * 6 });
   },
   nextCity() {
-    this.cityIdx++;
+    this.cityIdx++; this.carryHp = true;
     if (this.cityIdx >= CITIES.length) { this.setState('tourdone'); Sfx.play('clear'); return; }
     this.startCity();
   },
@@ -183,7 +191,9 @@ const Game = {
     const tx = m.x + rand(-12, 12), ty = m.y - m.h * 0.5 + rand(-18, 18);
     const sp = kind === 'shell' ? 300 : 330;
     const a = Math.atan2(ty - y, tx - x);
-    this.shots.push(new Shot(x, y, Math.cos(a) * sp, Math.sin(a) * sp, kind));
+    const shot = new Shot(x, y, Math.cos(a) * sp, Math.sin(a) * sp, kind);
+    shot.dmg *= 0.6 + 0.4 * this.d;   // the army hits harder as the tour goes on
+    this.shots.push(shot);
     if (kind === 'bullet') Sfx.play('shoot');
   },
   // Regular punches: splash damage. Vehicles anywhere in the blast take a hit, and the struck window
@@ -397,7 +407,7 @@ const Game = {
         break;
       case 'tourdone':
         this.updateAmbient(dt);
-        if ((go && this.stateT > 1.5) || this.stateT > 6) { this.tour++; this.cityIdx = 0; this.startCity(); }   // never parks here: rolls into the next tour on its own
+        if ((go && this.stateT > 1.5) || this.stateT > 6) { this.tour++; this.cityIdx = 0; this.carryHp = true; this.startCity(); }   // never parks here: rolls into the next tour on its own
         break;
     }
     Input.endFrame();
@@ -448,11 +458,11 @@ const Game = {
       sp.sol = rand(5, 8) / d;
       if (soldiers < 2 + Math.floor(d * 1.5)) { const dir = chance(0.5) ? 1 : -1; this.walkers.push(new Walker('soldier', dir > 0 ? -10 : W + 10, dir, d)); }
     }
-    if (this.levelT > 12) {
+    if (this.levelT > 12 / Math.sqrt(d)) {
       sp.tank -= dt;
       if (sp.tank <= 0) { sp.tank = rand(14, 20) / d; if (this.tanks.length < 1 + Math.floor((d - 1) * 1.2)) this.tanks.push(new Tank(chance(0.5) ? 1 : -1, d)); }
     }
-    if (this.levelT > 8) {
+    if (this.levelT > 8 / Math.sqrt(d)) {
       sp.heli -= dt;
       if (sp.heli <= 0) { sp.heli = rand(12, 18) / d; if (this.helis.filter(h => !h.falling).length < 1 + Math.floor((d - 1) * 1.5)) this.helis.push(new Heli(chance(0.5) ? 1 : -1, d)); }
     }
