@@ -65,6 +65,9 @@ class Monster {
     this.punchCd -= dt; this.punchT -= dt; this.hurtT -= dt; this.invuln -= dt; this.specialCd -= dt; this.eatT -= dt; this.slamCd -= dt; this.landT -= dt;
     if (this.defeated) { this.updateDefeat(dt, game); return; }
     if (this.def.tick) this.def.tick(this, dt, game);
+    this.turnT = (this.turnT || 0) - dt;
+    if (this.lastFacing !== undefined && this.lastFacing !== this.facing) this.turnT = 0.22;
+    this.lastFacing = this.facing;
     const C = control && !this.entering;
     const L = C && Input.held('left'), R = C && Input.held('right'), U = C && Input.held('up'), D = C && Input.held('down');
     const J = C && Input.held('jump'), Jhit = C && Input.hit('jump'), Dhit = C && Input.hit('down');
@@ -224,6 +227,7 @@ class Monster {
     let dir = U ? 'up' : D ? 'down' : 'side';
     if (this.state === 'climb' && dir === 'down') dir = 'side';
     this.punchDir = dir;
+    if (this.def.punch) { this.def.punch(this, game, dir); return; }
     const hit = game.resolveHit(this, this.hitPoints(dir), s.hitR, s.dmg, null);
     if (!hit) Sfx.play('whiff');
     else if (this.def.id === 'chronomunch') Sfx.play('chomp');
@@ -261,7 +265,8 @@ class Monster {
 
   pose() {
     return {
-      t: this.t, walk: (this.state === 'ground' || this.state === 'roof') && Math.abs(this.vx) > 1,
+      t: this.t, mon: this, turn: this.turnT > 0 ? 1 - this.turnT / 0.22 : 1,
+      walk: (this.state === 'ground' || this.state === 'roof') && Math.abs(this.vx) > 1,
       walkPhase: this.walkPhase, climb: this.state === 'climb', climbPhase: this.climbPhase,
       punch: this.punchT > 0 ? 1 - this.punchT / 0.2 : 0, punchDir: this.punchDir, hand: this.hand,
       air: this.state === 'air', glide: this.glide, eat: this.eatT > 0 ? this.eatT / 0.35 : 0,

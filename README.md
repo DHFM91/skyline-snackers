@@ -62,7 +62,7 @@ fullscreen and locks to landscape on your first tap.
   back to Peoria, much harder again. It never just ends. Tuning lives at the top of `js/game.js`
   (`DIFF_PER_CITY`, `DIFF_PER_TOUR`, `CITY_REFILL`).
 - The monster select screen is a fighting-game roster: everyone on one screen, no scrolling.
-  Tiles shrink as more monsters are added. Arrows move around the grid.
+  It always uses at least two rows, and tiles shrink as more monsters are added. Arrows or the mouse move around the grid.
 
 ## The roster
 
@@ -77,6 +77,7 @@ fullscreen and locks to landscape on your first tap.
 | **Elder Statesman** | Climbing | Filibuster: plants himself for a second while a wave of red tape and paperwork stuns the army and window snipers for 3s and heals him | Incumbency: each snack stacks +8% punch damage and 2% less damage taken (max 5, fades over time). Slow, sturdy, wide grabby swipes. |
 | **Gizzard** | Climbing | Blood Howl: a short howl with red shockwave rings, then a 5s frenzy (+32% speed, +50% damage, much faster punching) while the crowd panics | The BIG DEAD Dog, a hunched grey werewolf. Highest jump in the roster, so it's great at the Roof Slam. Scavenger: every snack heals a little extra. |
 | **Automated Solution** | Climbing | Target Lock: the eye paints up to 6 targets, then homing micro-missiles hit every one | A slow, relentless robot spider tank. Armoured chassis: takes 30% less damage and slowly self-repairs. Highest health in the roster, low jump, slow stabbing punch. |
+| **Gat Stanley** | Flattens | Gat Rampage: rooted for a moment, he sprays a sweeping tommy-gun arc across the block | A mailed-around paper boy with a tommy gun. His punch is a short burst that breaks windows and drops soldiers from range, but bullets can't eat: up close, the same button grabs snacks by hand. Turns edge-on like paper (shots slip past mid-turn), flutters when he falls (hold Jump). Return to Sender: some shots bounce back at the shooter. Art by a friend. |
 
 ## Project layout
 
@@ -92,7 +93,8 @@ LEGAL_NOTES.md    IP reasoning, and the checklist to run before adding a homage
 ```
 
 All art is drawn in code (canvas shapes) and every sound is synthesized, with one exception: the
-Elder Statesman sprite (`art/statesman/`) is the owner's own art. Nothing is borrowed.
+Elder Statesman sprite (`art/statesman/`) is the owner's own art, and the Gat Stanley sprite
+(`art/stanley/`) is a friend's original art made for the game. Nothing is borrowed.
 
 ## Adding a monster
 

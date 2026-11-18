@@ -144,7 +144,7 @@ const Game = {
   rosterGrid() {
     const n = MONSTERS.length, gx = 40, gy = 356, gw = W - 80, gh = 140, gap = 8;
     let best = { cols: n, s: 0 };
-    for (let cols = 1; cols <= n; cols++) {
+    for (let cols = 1; cols <= Math.max(1, Math.ceil(n / 2)); cols++) {   // at least two rows, room to grow
       const rows = Math.ceil(n / cols);
       const sz = Math.min(110, (gw - (cols - 1) * gap) / cols, (gh - (rows - 1) * gap) / rows);
       if (sz > best.s) best = { cols, s: sz };
@@ -433,7 +433,10 @@ const Game = {
     for (const s of this.shots) {
       s.update(dt);
       if (!s.dead && m.vulnerable && circleRect(s.x, s.y, s.r, m.box())) {
-        s.dead = true; m.takeHit(s.dmg, this);
+        const res = m.def.onShot ? m.def.onShot(m, s, this) : null;   // 'pass' = slips past, 'reflect' = sent back
+        if (res === 'pass') continue;
+        s.dead = true;
+        if (res !== 'reflect') m.takeHit(s.dmg, this);
         FX.spark(s.x, s.y, s.kind === 'shell' ? 10 : 4, s.kind === 'shell' ? '#ff9a3c' : '#fff6a8');
         if (s.kind === 'shell') { FX.boom(s.x, s.y, 0.5); Sfx.play('boom'); this.shake = Math.max(this.shake, 5); }
       }

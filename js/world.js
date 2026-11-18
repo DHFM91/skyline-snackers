@@ -135,7 +135,8 @@ const FX = {
       } else {
         ctx.globalAlpha = Math.min(1, a * 2);
         ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
-        if (p.shape === 'tri') { ctx.beginPath(); ctx.moveTo(-p.size, p.size); ctx.lineTo(p.size, p.size); ctx.lineTo(0, -p.size); ctx.fill(); }
+        if (p.shape === 'line') { ctx.fillRect(-p.len, -p.size / 2, p.len, p.size); }
+        else if (p.shape === 'tri') { ctx.beginPath(); ctx.moveTo(-p.size, p.size); ctx.lineTo(p.size, p.size); ctx.lineTo(0, -p.size); ctx.fill(); }
         else ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
         ctx.restore();
       }
