@@ -30,5 +30,6 @@ A parody of "The Very Hungry Caterpillar", with snake-style movement.
   protected character, so no red head with green segments, no copy of its face or the book's
   collage art style, and no title or quotes from the book. The parody is the idea of an
   insatiably hungry caterpillar eating through everything.
-- Still to decide: how he moves (crawls on the ground and up walls, or slithers freely like a flyer),
-  his special and passive, and what he turns into when defeated.
+- **Decided:** he's a crawler (walks and climbs walls; the trailing segments follow him up the wall),
+  and the snake mechanics above are confirmed. The parody look, special, passive and defeat form are
+  left to the builder's judgment.
