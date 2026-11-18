@@ -1,4 +1,4 @@
-/* ---------- GAT STANLEY (sprite: a friend's original art, art/stanley/*.png) ----------
+/* ---------- GAT STANLEY (sprite art: art/stanley/*.png) ----------
    A paper boy who gets mailed around, with a tommy gun. He turns like a sheet of paper (edge-on),
    flutters when he falls, and sends enemy fire back where it came from. His punch button fires a
    short burst; bullets break things but can't eat, so he still has to grab snacks by hand. */
@@ -176,7 +176,7 @@
   registerMonster({
     id: 'stanley', name: 'GAT STANLEY',
     tagline: 'Return to sender.',
-    homage: 'A mailed-around paper boy, armed (a friend\'s art)',
+    homage: 'A mailed-around paper boy, now armed',
     move: 'FLATTENS', specialName: 'GAT RAMPAGE', specialDesc: 'Sweeping tommy-gun spray across the block',
     passive: 'Return to sender: some shots bounce back at the shooter',
     bars: { STR: 2, SPD: 3, REACH: 5, TOUGH: 2 },

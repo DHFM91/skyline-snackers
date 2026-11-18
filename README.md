@@ -77,7 +77,7 @@ fullscreen and locks to landscape on your first tap.
 | **Elder Statesman** | Climbing | Filibuster: plants himself for a second while a wave of red tape and paperwork stuns the army and window snipers for 3s and heals him | Incumbency: each snack stacks +8% punch damage and 2% less damage taken (max 5, fades over time). Slow, sturdy, wide grabby swipes. |
 | **Gizzard** | Climbing | Blood Howl: a short howl with red shockwave rings, then a 5s frenzy (+32% speed, +50% damage, much faster punching) while the crowd panics | The BIG DEAD Dog, a hunched grey werewolf. Highest jump in the roster, so it's great at the Roof Slam. Scavenger: every snack heals a little extra. |
 | **Automated Solution** | Climbing | Target Lock: the eye paints up to 6 targets, then homing micro-missiles hit every one | A slow, relentless robot spider tank. Armoured chassis: takes 30% less damage and slowly self-repairs. Highest health in the roster, low jump, slow stabbing punch. |
-| **Gat Stanley** | Flattens | Gat Rampage: rooted for a moment, he sprays a sweeping tommy-gun arc across the block | A mailed-around paper boy with a tommy gun. His punch is a short burst that breaks windows and drops soldiers from range, but bullets can't eat: up close, the same button grabs snacks by hand. Turns edge-on like paper (shots slip past mid-turn), flutters when he falls (hold Jump). Return to Sender: some shots bounce back at the shooter. Art by a friend. |
+| **Gat Stanley** | Flattens | Gat Rampage: rooted for a moment, he sprays a sweeping tommy-gun arc across the block | A mailed-around paper boy with a tommy gun. His punch is a short burst that breaks windows and drops soldiers from range, but bullets can't eat: up close, the same button grabs snacks by hand. Turns edge-on like paper (shots slip past mid-turn), flutters when he falls (hold Jump). Return to Sender: some shots bounce back at the shooter. |
 
 ## Project layout
 
@@ -94,7 +94,7 @@ LEGAL_NOTES.md    IP reasoning, and the checklist to run before adding a homage
 
 All art is drawn in code (canvas shapes) and every sound is synthesized, with one exception: the
 Elder Statesman sprite (`art/statesman/`) is the owner's own art, and the Gat Stanley sprite
-(`art/stanley/`) is a friend's original art made for the game. Nothing is borrowed.
+(`art/stanley/`) was supplied by the owner. Nothing is borrowed.
 
 ## Adding a monster
 
