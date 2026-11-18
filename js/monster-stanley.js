@@ -4,7 +4,7 @@
    short burst; bullets break things but can't eat, so he still has to grab snacks by hand. */
 (function () {
   const PARTS = {};
-  if (typeof Image !== 'undefined') for (const k of ['base', 'gun', 'gun-slung']) { const im = new Image(); im.src = 'art/stanley/' + k + '.png'; PARTS[k] = im; }
+  if (typeof Image !== 'undefined') for (const k of ['base', 'gun', 'gun-slung']) { const im = new Image(); im.src = 'art/stanley/' + k + '.png?v=35'; PARTS[k] = im; }
   const ready = () => PARTS.base && PARTS.base.complete && PARTS.base.naturalWidth && PARTS.gun.complete && PARTS.gun.naturalWidth;
 
   // Art space: the cut-out is 420 x 528 units; the lower legs and shoes are drawn below it.
