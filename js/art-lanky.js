@@ -79,26 +79,61 @@
     ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(mx, my); ctx.lineTo(ex, ey); stroke(ctx, col, w);
   }
 
-  // a big, long-fingered hand. ang: direction of the forearm. spread/curl 0..1
+  // cartoon hand: palm path plus a fixed fan of finger capsules, rotated as one unit.
+  // ang: direction the forearm points. spread 0..1, curl 0..1.2 (toward the little-finger side), wave: finger drumming
   function hand(ctx, x, y, ang, spread, curl, wave, t, far) {
-    const skin = far ? K2 : K1;
-    ctx.save(); ctx.translate(x, y); ctx.rotate(ang - Math.PI / 2); ctx.scale(1.3, 1.3);
-    // local: fingers point toward -y
-    const L = [7.2, 8.6, 8.2, 6.6], X = [-3, -1, 1, 3], A = [-0.32, -0.1, 0.1, 0.3];
-    const fa = [], fb = [];
+    const skin = far ? '#d9c3a8' : '#f2e2cd', sh = far ? '#b79b7c' : '#d3b894';
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang + Math.PI / 2);
+    // fingers point toward -y, thumb on the -x side
+    const FX = [-3.3, -1.1, 1.1, 3.2], FY = [-3.4, -3.9, -3.7, -3.1], FL = [7.4, 8.8, 8.2, 6.4];
+    const fan = [-0.2, -0.06, 0.08, 0.24];
+    const fingers = [];
     for (let i = 0; i < 4; i++) {
       const w = wave > 0 ? Math.max(0, Math.sin(t * 6.4 - i * 1.0)) * wave : 0;
-      fa[i] = -Math.PI / 2 + A[i] * (0.4 + spread * 1.5);
-      fb[i] = (0.3 + curl * 1.0 + w * 1.15);
+      const a0 = -Math.PI / 2 + fan[i] * (0.35 + spread * 1.9);
+      const c = curl * (0.8 + i * 0.07) + 0.18 + w * 1.0;
+      const l1 = FL[i] * 0.5, l2 = FL[i] * 0.3, l3 = FL[i] * 0.2;
+      const x1 = FX[i] + Math.cos(a0) * l1, y1 = FY[i] + Math.sin(a0) * l1;
+      const a1 = a0 + c * 0.9, x2 = x1 + Math.cos(a1) * l2, y2 = y1 + Math.sin(a1) * l2;
+      const a2 = a1 + c * 0.9, x3 = x2 + Math.cos(a2) * (l3 + 1.2), y3 = y2 + Math.sin(a2) * (l3 + 1.2);
+      fingers.push([[FX[i], FY[i]], [x1, y1], [x2, y2], [x3, y3]]);
     }
-    for (let i = 0; i < 4; i++) finger(ctx, X[i], -3, fa[i], L[i] * 0.55, L[i] * 0.5, fb[i], 3.7, INK);
-    ctx.beginPath(); ctx.moveTo(-2, 1); ctx.lineTo(-5.5 - spread * 2, -2 - spread); stroke(ctx, INK, 3.7);
-    ctx.beginPath(); ctx.ellipse(0, 0, 4.1, 4.9, 0, 0, Math.PI * 2); ctx.fillStyle = INK; ctx.fill();
-    for (let i = 0; i < 4; i++) finger(ctx, X[i], -3, fa[i], L[i] * 0.55, L[i] * 0.5, fb[i], 2.1, skin);
-    ctx.beginPath(); ctx.moveTo(-2, 1); ctx.lineTo(-5.5 - spread * 2, -2 - spread); stroke(ctx, skin, 2.1);
-    ctx.beginPath(); ctx.ellipse(0, 0, 3.2, 4.0, 0, 0, Math.PI * 2); ctx.fillStyle = skin; ctx.fill();
-    ctx.fillStyle = K2; ctx.beginPath(); ctx.ellipse(1.2, 1.4, 1.9, 2.5, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = K4; ctx.beginPath(); ctx.ellipse(-1.2, -1, 0.9, 1.4, 0, 0, Math.PI * 2); ctx.fill();
+    const ta = -Math.PI / 2 - (0.75 + spread * 0.55) + curl * 0.25;
+    const tb = ta + 0.35 + curl * 0.5;
+    const th0 = [-3.6, 1.2], th1 = [th0[0] + Math.cos(ta) * 4, th0[1] + Math.sin(ta) * 4];
+    const th2 = [th1[0] + Math.cos(tb) * 3.4, th1[1] + Math.sin(tb) * 3.4];
+    const palm = () => {
+      ctx.beginPath(); ctx.moveTo(-4.4, -3.2);
+      ctx.quadraticCurveTo(0, -5.4, 4.2, -3.2);
+      ctx.quadraticCurveTo(5.6, 0.5, 3.4, 4.6);
+      ctx.quadraticCurveTo(0, 6.2, -3.4, 4.6);
+      ctx.quadraticCurveTo(-5.4, 1.2, -4.4, -3.2); ctx.closePath();
+    };
+    const cap = (pts, w, col) => {
+      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      stroke(ctx, col, w);
+    };
+    // outlines first so the hand reads as one shape
+    for (const f of fingers) cap(f, 4.2, INK);
+    cap([th0, th1, th2], 4.8, INK);
+    palm(); stroke(ctx, INK, 2.2);
+    // fills
+    for (const f of fingers) cap(f, 2.8, skin);
+    cap([th0, th1, th2], 3.4, skin);
+    palm(); ctx.fillStyle = skin; ctx.fill();
+    // shadow side of fingers and palm, thumb pad
+    for (const f of fingers) { cap([[f[1][0] + 0.6, f[1][1]], [f[2][0] + 0.6, f[2][1]]], 0.7, sh); }
+    ctx.save(); palm(); ctx.clip();
+    ctx.fillStyle = sh; ctx.beginPath(); ctx.ellipse(3.4, 3, 3.4, 4.4, 0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff6e8'; ctx.beginPath(); ctx.ellipse(-1.6, -1.2, 1.5, 2.2, 0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = sh; ctx.lineWidth = 0.8; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-2.6, 1.6); ctx.quadraticCurveTo(0, 2.8, 3, 1.2); ctx.stroke();
+    // knuckles
+    ctx.fillStyle = sh;
+    for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(FX[i], FY[i] + 0.9, 0.55, 0, Math.PI * 2); ctx.fill(); }
+    palm(); stroke(ctx, INK, 0.0001);
     ctx.restore();
   }
 
@@ -106,7 +141,7 @@
   function arm(ctx, sh, el, wr, far, p, spread, curl, wave) {
     const base = far ? S2 : S1, sh2 = far ? S3 : S2, hi = far ? S1 : S4;
     const ang = Math.atan2(wr[1] - el[1], wr[0] - el[0]);
-    hand(ctx, wr[0] + Math.cos(ang) * 3.2, wr[1] + Math.sin(ang) * 3.2, ang, spread, curl, wave, p.t, far);
+    hand(ctx, wr[0] + Math.cos(ang) * 5.2, wr[1] + Math.sin(ang) * 5.2, ang, spread, curl, wave, p.t, far);
     tube(ctx, sh, el, wr, 5.8, 4.8, base, sh2, hi, INK);
     // white shirt cuff
     const cx = wr[0] - Math.cos(ang) * 2, cy = wr[1] - Math.sin(ang) * 2, c0x = wr[0] - Math.cos(ang) * 0.2, c0y = wr[1] - Math.sin(ang) * 0.2;
@@ -160,8 +195,8 @@
     ctx.fillStyle = T3; ctx.beginPath(); ctx.moveTo(kx - 2.4, ky - 1.6); ctx.lineTo(kx - 0.4, ky - 1.6); ctx.lineTo(kx - 0.8, ky + 3); ctx.lineTo(kx - 2.6, ky + 2.4); ctx.fill();
   }
 
-  // the egg head with its doodled smiley
-  function head(ctx, p, x, y, rot, mood, mouthOpen, brow) {
+  // blank egg head with a yellow sticky note and a marker smiley on it
+  function head(ctx, p, x, y, rot, mood, mouthOpen, flutter) {
     const t = p.t;
     ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(0.92, 0.92);
     const egg = () => {
@@ -174,45 +209,54 @@
     egg(); ctx.fillStyle = K2; ctx.fill();
     ctx.save(); egg(); ctx.clip();
     ctx.fillStyle = K1; ctx.beginPath(); ctx.ellipse(1.6, -1.2, 9.6, 12.4, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = K4; ctx.beginPath(); ctx.ellipse(-0.6, -6.6, 3.8, 5, -0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = K4; ctx.beginPath(); ctx.ellipse(-0.6, -7.2, 3.6, 4.6, -0.5, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = K3; ctx.beginPath(); ctx.ellipse(-10.4, 3, 3.4, 11, 0, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
     egg(); stroke(ctx, SK, 1.3);
-    // face, shifted toward the front
-    const fx = 2.8;
-    const blinkPh = Math.sin(t * 1.35 + 0.6), blink = blinkPh > 0.94;
-    const wink = Math.sin(t * 0.55 + 2) > 0.985;
-    const lookX = Math.sin(t * 0.8) * 0.7;
-    ctx.fillStyle = 'rgba(232,130,120,0.35)';
-    ctx.beginPath(); ctx.ellipse(fx - 4.3, 3.6, 1.8, 1.1, 0, 0, Math.PI * 2); ctx.ellipse(fx + 4.8, 3.6, 1.5, 1, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#2b2118'; ctx.fillStyle = '#2b2118'; ctx.lineCap = 'round'; ctx.lineWidth = 1.3;
-    const eye = (ex, ey, rx, closed) => {
-      if (mood === 2) { ctx.beginPath(); ctx.moveTo(ex - 1.4, ey - 1.4); ctx.lineTo(ex + 1.4, ey + 1.4); ctx.moveTo(ex + 1.4, ey - 1.4); ctx.lineTo(ex - 1.4, ey + 1.4); ctx.stroke(); return; }
-      if (mood === 1) { ctx.beginPath(); const sg = ex < fx + 1 ? 1 : -1; ctx.moveTo(ex - 1.5 * sg, ey - 1.5); ctx.lineTo(ex + 1.3 * sg, ey); ctx.lineTo(ex - 1.5 * sg, ey + 1.5); ctx.stroke(); return; }
-      if (closed) { ctx.beginPath(); ctx.moveTo(ex - rx - 0.4, ey + 0.3); ctx.quadraticCurveTo(ex, ey + 1.4, ex + rx + 0.4, ey + 0.3); ctx.stroke(); return; }
-      ctx.beginPath(); ctx.ellipse(ex + lookX * 0.3, ey, rx, 1.65, 0, 0, Math.PI * 2); ctx.fill();
+
+    // the note
+    const N = 5.8, fl = flutter * Math.sin(t * 7.5) + Math.sin(t * 1.7) * 0.25;
+    ctx.save(); ctx.translate(3.2, 1.6); ctx.rotate(-0.1 + Math.sin(t * 1.3) * 0.025);
+    const cx = N - 1.9 + fl * 0.8, cy = N - 1.9 + Math.abs(fl) * 0.6;   // curled corner tip
+    const notePath = () => {
+      ctx.beginPath(); ctx.moveTo(-N, -N); ctx.lineTo(N, -N); ctx.lineTo(N + fl * 0.3, N - 2.6); ctx.lineTo(N - 2.4, N + fl * 0.5);
+      ctx.lineTo(-N, N + 0.4); ctx.closePath();
     };
-    eye(fx - 2.9, -2.4, 0.95, blink);
-    eye(fx + 3.6, -2.4, 0.8, blink || wink);
-    // brows
-    if (brow > 0 || mood === 0) {
-      ctx.lineWidth = 0.9; const by = -5.9 - brow * 1.8;
-      ctx.beginPath(); ctx.moveTo(fx - 4.4, by + 0.5); ctx.quadraticCurveTo(fx - 2.8, by - 0.8, fx - 1.3, by + 0.2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(fx + 2.3, by + 0.2); ctx.quadraticCurveTo(fx + 3.6, by - 0.8, fx + 5, by + 0.5); ctx.stroke();
-    }
-    ctx.lineWidth = 1.3;
+    ctx.save(); ctx.translate(0.9, 1.3); notePath(); ctx.fillStyle = 'rgba(40,30,20,0.28)'; ctx.fill(); ctx.restore();
+    notePath(); ctx.fillStyle = '#ffe56a'; ctx.fill();
+    ctx.save(); notePath(); ctx.clip();
+    ctx.fillStyle = '#f5cd3c'; ctx.fillRect(-N, -N, 2 * N, 2.1);
+    ctx.fillStyle = 'rgba(255,255,230,0.55)'; ctx.fillRect(-N, -N + 2.1, 1.3, 2 * N);
+    ctx.fillStyle = 'rgba(214,160,30,0.35)'; ctx.fillRect(-N, N - 2.6, 2 * N, 3);
+    ctx.restore();
+    notePath(); stroke(ctx, '#a07a1c', 0.8);
+    // lifted corner
+    ctx.beginPath(); ctx.moveTo(N + fl * 0.3, N - 2.6); ctx.lineTo(N - 2.4, N + fl * 0.5); ctx.lineTo(N - 2.6 + fl * 0.3, N - 2.6 - fl * 0.2 + 0.9);
+    ctx.closePath(); ctx.fillStyle = '#d9ae2c'; ctx.fill(); stroke(ctx, '#a07a1c', 0.6);
+
+    // marker smiley
+    const blink = Math.sin(t * 1.35 + 0.6) > 0.94, wink = Math.sin(t * 0.55 + 2) > 0.985;
+    const lookX = Math.sin(t * 0.8) * 0.5;
+    const MK = '#1c1710';
+    ctx.strokeStyle = MK; ctx.fillStyle = MK; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 1.25;
+    const eye = (ex, ey, closed, sg) => {
+      if (mood === 2) { ctx.beginPath(); ctx.moveTo(ex - 1.3, ey - 1.3); ctx.lineTo(ex + 1.3, ey + 1.3); ctx.moveTo(ex + 1.3, ey - 1.3); ctx.lineTo(ex - 1.3, ey + 1.3); ctx.stroke(); return; }
+      if (mood === 1) { ctx.beginPath(); ctx.moveTo(ex - 1.3 * sg, ey - 1.4); ctx.lineTo(ex + 1.2 * sg, ey); ctx.lineTo(ex - 1.3 * sg, ey + 1.4); ctx.stroke(); return; }
+      if (closed) { ctx.beginPath(); ctx.moveTo(ex - 1.5, ey + 0.2); ctx.quadraticCurveTo(ex, ey + 1.3, ex + 1.5, ey + 0.2); ctx.stroke(); return; }
+      ctx.beginPath(); ctx.ellipse(ex + lookX * 0.3, ey, 0.85, 1.45, 0, 0, Math.PI * 2); ctx.fill();
+    };
+    eye(-2.1, -1.7, blink, 1); eye(2.3, -1.7, blink || wink, -1);
     if (mouthOpen > 0.05) {
-      const o = 0.9 + mouthOpen * 3.2;
-      ctx.fillStyle = '#4a1a1a'; ctx.beginPath(); ctx.ellipse(fx + 0.4, 5.2, 2.9, o, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#d96b72'; ctx.beginPath(); ctx.ellipse(fx + 0.4, 5.2 + o * 0.45, 1.8, o * 0.42, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#2b2118'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(fx + 0.4, 5.2, 2.9, o, 0, 0, Math.PI * 2); ctx.stroke();
+      const o = 0.9 + mouthOpen * 1.9;
+      ctx.beginPath(); ctx.ellipse(0.1, 2.3, 2.3, o, 0, 0, Math.PI * 2); ctx.fillStyle = '#4a1a1a'; ctx.fill(); ctx.lineWidth = 1; ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(0.1, 2.3 + o * 0.5, 1.4, o * 0.4, 0, 0, Math.PI * 2); ctx.fillStyle = '#d96b72'; ctx.fill();
     } else if (mood === 1) {
-      ctx.beginPath(); ctx.moveTo(fx - 3.4, 6.4); ctx.quadraticCurveTo(fx - 1.6, 4.4, fx, 6.2); ctx.quadraticCurveTo(fx + 1.6, 8, fx + 3.6, 6); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-2.8, 3); ctx.quadraticCurveTo(-1.4, 1.4, 0, 2.8); ctx.quadraticCurveTo(1.4, 4.2, 2.8, 2.6); ctx.stroke();
     } else {
-      const sm = 1 + Math.sin(t * 1.9) * 0.08;
-      ctx.beginPath(); ctx.moveTo(fx - 4.2, 3.6); ctx.quadraticCurveTo(fx - 0.2, 3.6 + 5.4 * sm, fx + 5, 3.2); ctx.stroke();
-      ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(fx - 4.2, 3.6); ctx.lineTo(fx - 5, 2.9); ctx.moveTo(fx + 5, 3.2); ctx.lineTo(fx + 5.8, 2.5); ctx.stroke();
+      const sm = 1 + Math.sin(t * 1.9) * 0.1;
+      ctx.beginPath(); ctx.moveTo(-3.2, 1.2); ctx.quadraticCurveTo(0, 1.2 + 4.6 * sm, 3.4, 1); ctx.stroke();
     }
+    ctx.restore();
     ctx.restore();
   }
 
@@ -271,7 +315,7 @@
     const farSh = W(-5.5, -34.2), nearSh = W(6.5, -34.2);
     let faH, naH, spreadN = 0.1, curlN = 0.35, spreadF = 0.1, curlF = 0.35, waveN = 0, waveF = 0;
     if (climb) {
-      faH = [14, -145 - Math.sin(cp) * 8]; naH = [15, -145 + Math.sin(cp) * 8]; spreadN = 0.4; spreadF = 0.4; curlN = 0.5; curlF = 0.5;
+      faH = [14, -145 - Math.sin(cp) * 8]; naH = [15, -145 + Math.sin(cp) * 8]; spreadN = 0.05; spreadF = 0.05; curlN = 1.05; curlF = 1.05;
       faH = [7, -153 + Math.sin(cp) * 8]; naH = [19, -153 - Math.sin(cp) * 8];
     } else if (air) {
       faH = [-9 + Math.sin(t * 8) * 3, -120 + Math.sin(t * 8) * 5]; naH = [15 + Math.sin(t * 8 + 1) * 3, -126 + Math.sin(t * 8 + 1) * 5];
@@ -290,18 +334,18 @@
     }
     if (pe > 0) {
       const hx = lerp(naH[0], p.hand.x, pe), hy = lerp(naH[1], p.hand.y, pe);
-      naH = [hx, hy]; spreadN = 0.2 + pe * 1.1; curlN = 0.35 - pe * 0.35; waveN = 0;
+      naH = [hx, hy]; spreadN = 0.2 + pe * 1.1; curlN = 0.35 - pe * 0.45; waveN = 0;
       faH = [lerp(faH[0], -12, pe), lerp(faH[1], -76, pe)];
     }
     let head0 = W(1.5, -54);
     if (eat) {
       const chew = Math.sin(t * 28) * 1.2;
-      naH = [head0[0] + 6 + chew * 0.5, head0[1] + 11 + chew];
-      curlN = 0.7; spreadN = 0.1; waveN = 0;
+      naH = [head0[0] + 15 + chew * 0.4, head0[1] + 16 + chew];
+      curlN = 0.6; spreadN = 0.1; waveN = 0;
     }
     const sideF = -1, sideN = -1;
     const farEl = ik(farSh[0], farSh[1], faH[0], faH[1], 29.5, 30, climb || air ? 1 : sideF);
-    const nearEl = ik(nearSh[0], nearSh[1], naH[0], naH[1], 29.5, 30, climb ? 1 : (eat ? 1 : (pe > 0.2 ? 1 : sideN)));
+    const nearEl = ik(nearSh[0], nearSh[1], naH[0], naH[1], 29.5, 30, climb ? 1 : (eat ? -1 : (pe > 0.2 ? 1 : sideN)));
 
     // draw far arm
     arm(ctx, farSh, farEl, faH, true, p, spreadF, curlF, waveF);
@@ -393,7 +437,7 @@
 
     const tilt = Math.sin(t * 1.1) * 0.11 + Math.sin(t * 2.6 + 1) * 0.03 + (walk ? -lean * 0.8 + Math.sin(ph * 2) * 0.03 : 0) + (climb ? -0.18 : 0) + (air ? 0.12 : 0) - pe * 0.1 + (eat ? -0.1 : 0);
     const hp = W(1.5 + Math.sin(t * 1.1) * 0.6, -54 + Math.sin(t * 2.1 + 1) * 0.5);
-    head(ctx, p, hp[0], hp[1], tilt, mood, eat ? Math.min(1, 0.4 + Math.abs(Math.sin(t * 28)) * 0.6) : 0, pe > 0.3 ? 1 : (air ? 1 : 0));
+    head(ctx, p, hp[0], hp[1], tilt, mood, eat ? Math.min(1, 0.4 + Math.abs(Math.sin(t * 28)) * 0.6) : 0, (walk ? 0.7 : 0) + (air || dash ? 1.4 : 0) + pe * 1.2 + (climb ? 0.4 : 0));
 
     // near arm over everything
     arm(ctx, nearSh, nearEl, naH, false, p, spreadN, curlN, waveN);
@@ -437,8 +481,9 @@
     ctx.save(); ctx.translate(0.6, -31); ctx.rotate(Math.sin(t * 18) * 0.05);
     ctx.beginPath(); ctx.ellipse(0, 0, 4.4, 5.6, 0, 0, Math.PI * 2); ctx.fillStyle = K1; ctx.fill(); stroke(ctx, SK, 0.9);
     ctx.fillStyle = K4; ctx.beginPath(); ctx.ellipse(-1.2, -2.2, 1.4, 1.9, -0.4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#2b2118'; ctx.beginPath(); ctx.arc(0.6, -0.8, 0.6, 0, Math.PI * 2); ctx.arc(3, -0.8, 0.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(1.8, 1, 1.9, 0.25, Math.PI - 0.25); stroke(ctx, '#2b2118', 0.7);
+    ctx.save(); ctx.translate(1.8, 0.6); ctx.rotate(-0.1); ctx.fillStyle = '#ffe56a'; ctx.fillRect(-2.6, -2.6, 5.2, 5.2); ctx.fillStyle = '#f5cd3c'; ctx.fillRect(-2.6, -2.6, 5.2, 1);
+    ctx.fillStyle = '#1c1710'; ctx.beginPath(); ctx.arc(-0.9, -0.6, 0.4, 0, Math.PI * 2); ctx.arc(1, -0.6, 0.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0.4, 1.3, 0.3, Math.PI - 0.3); stroke(ctx, '#1c1710', 0.6); ctx.restore();
     ctx.restore();
     ctx.restore();
   };
