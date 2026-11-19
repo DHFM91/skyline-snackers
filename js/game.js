@@ -45,11 +45,13 @@ const Game = {
 
   /* ---------- flow ---------- */
   newGame() {
-    this.score = 0; this.lives = START_LIVES; this.cityIdx = 0; this.tour = 1; this.helpT = 9;
+    this.score = 0; this.lives = START_LIVES; this.cityIdx = 0; this.tour = 1; this.runCities = 0; this.helpT = 9;
     this.startCity();
   },
   startCity() {
-    this.d = Math.min(DIFF_MAX, 1 + this.cityIdx * DIFF_PER_CITY + (this.tour - 1) * DIFF_PER_TOUR);
+    // Difficulty follows this run's progress, not the map: a new run always starts easy, wherever it begins.
+    const run = this.runCities || 0;
+    this.d = Math.min(DIFF_MAX, 1 + run * DIFF_PER_CITY + Math.floor(run / CITIES.length) * DIFF_PER_TOUR);
     this.buildLevel();
     const prev = this.carryHp ? this.monster : null;
     this.carryHp = false;
@@ -88,7 +90,7 @@ const Game = {
     this.stars = []; for (let i = 0; i < 70; i++) this.stars.push({ x: rng() * W, y: rng() * 300, s: rng() * 1.6 + 0.4, p: rng() * 6 });
   },
   nextCity() {
-    this.cityIdx++; this.carryHp = true;
+    this.cityIdx++; this.runCities = (this.runCities || 0) + 1; this.carryHp = true;
     if (this.cityIdx >= CITIES.length) { this.setState('tourdone'); Sfx.play('clear'); return; }
     this.startCity();
   },
@@ -372,8 +374,9 @@ const Game = {
         }
         if (go && this.stateT > 0.3) {
           Sfx.play('confirm');
-          if (this.continuing) { this.continuing = false; this.score = 0; this.lives = START_LIVES; this.startCity(); }
-          else this.newGame();
+          if (this.continuing) {   // a new run where you fell: same city, fresh difficulty and score
+            this.continuing = false; this.score = 0; this.lives = START_LIVES; this.runCities = 0; this.startCity();
+          } else this.newGame();
         }
         break;
       case 'intro':
@@ -407,7 +410,7 @@ const Game = {
         break;
       case 'tourdone':
         this.updateAmbient(dt);
-        if ((go && this.stateT > 1.5) || this.stateT > 6) { this.tour++; this.cityIdx = 0; this.carryHp = true; this.startCity(); }   // never parks here: rolls into the next tour on its own
+        if ((go && this.stateT > 1.5) || this.stateT > 6) { this.tour++; this.cityIdx = 0; this.runCities = (this.runCities || 0) + 1; this.carryHp = true; this.startCity(); }   // never parks here: rolls into the next tour on its own
         break;
     }
     Input.endFrame();
@@ -689,8 +692,7 @@ const Game = {
   drawSelect() {
     const t = this.t, n = MONSTERS.length;
     ctx.fillStyle = 'rgba(8,6,20,0.72)'; ctx.fillRect(0, 0, W, H);
-    this.text('CHOOSE YOUR MONSTER', W / 2, this.continuing ? 40 : 46, 30, '#ffe14d', 'center', 5);
-    if (this.continuing) this.text('CONTINUE IN ' + this.city.name + '  ·  SCORE RESETS', W / 2, 62, 11, '#7dffb0', 'center', 3);
+    this.text('CHOOSE YOUR MONSTER', W / 2, 46, 30, '#ffe14d', 'center', 5);
     // detail panel for the highlighted monster
     const def = MONSTERS[this.sel], s = def.stats;
     ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.beginPath(); ctx.roundRect(40, 72, W - 80, 272, 14); ctx.fill();

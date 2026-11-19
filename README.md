@@ -53,10 +53,10 @@ fullscreen and locks to landscape on your first tap.
   3 initials: just type them (e.g. C-A-T, Backspace to fix, Enter to confirm), or dial them
   arcade-style (↑↓ change the letter, ←→ move, Punch to confirm). On a phone, tap the letters
   to bring up the keyboard, or dial with the joystick.
-  Then you go back to the monster select screen to continue from the city where you fell.
-  You can switch monsters there, and your score resets.
+  Then you go back to the monster select screen and start a new run in the city where you fell.
+  Score and difficulty both reset, so every run is scored fairly.
 - The tour is 33 stops, heading west around the globe from Peoria (Chicago, Las Vegas, New York,
-  Dunwich, London, Rome, Cairo, Dubai, Tokyo, Sydney, Rio and more) and ending at R'lyeh. Each city is
+  Dunwich, London, Rome, Cairo, Dubai, Tokyo, Sydney, Rio and more) and ending at R'lyeh. Each city you clear in a run is
   noticeably harder than the last (more and deadlier soldiers, snipers, tanks and helicopters), and your
   health carries over between cities with only a small top-up, so damage adds up. After R'lyeh it loops
   back to Peoria, much harder again. It never just ends. Tuning lives at the top of `js/game.js`
