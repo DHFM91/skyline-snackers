@@ -339,8 +339,9 @@
     specialDesc: 'Howls up a 5s red frenzy: faster, harder, quicker punches',
     passive: 'Scavenger: heals 4 extra from every snack',
     bars: { STR: 4, SPD: 4, REACH: 2, TOUGH: 3 },
-    stats: { w: 44, h: 96, speed: 152, climb: 104, jump: 780, dmg: 2.1, reach: 34, hitR: 20, punchCd: 0.28,
-      maxHp: 110, armor: 0.96, armY: 0.6, specialCd: 9 },
+    specialHeal: 35,
+  stats: { w: 44, h: 96, speed: 152, climb: 104, jump: 780, dmg: 2.1, reach: 34, hitR: 20, punchCd: 0.28,
+      maxHp: 125, armor: 0.96, armY: 0.6, specialCd: 9 },
     portraitY: 0.8,
     tick(m, dt, game) {
       const base = m.def.stats;

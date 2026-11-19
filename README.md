@@ -66,17 +66,20 @@ fullscreen and locks to landscape on your first tap.
 
 ## The roster
 
+Balance: every monster was tuned (Nov 2026) so the same button-mashing test bot clears about 3 cities with each.
+Some specials also heal a little (Cthulhu, Lanky Hank, Unscheduled Visitor, Elder Statesman, Gizzard).
+
 | Monster | Moves by | Special | Notes |
 |---|---|---|---|
 | **Cthulhu** | Climbing | Madness Roar: stuns the army, makes the crowd faint | Toughest, hits hardest. Hold Jump in the air to glide. |
 | **Lanky Hank** | Climbing | Blink: short teleport with brief invulnerability | Longest reach, fastest climber. |
 | **Chronomunch** | Flying | Time Chomp: a lunge that eats everything in its path | Never climbs. Fragile. |
 | **Generic Kaiju** | Climbing | Foam Blast: a frothy cone of suds that wrecks windows, vehicles and soldiers | A store-brand giant crab. Big punching claw, sturdy. Hard shell: takes 10% less damage. |
-| **Act of God** | Flying | Smite: a volley of 6 lightning strikes rains down across the block, wrecking everything on the strike lines and briefly stunning the army | A grumpy thundercloud with long reach. Slow but sturdy. Overcast: takes 15% less damage. |
-| **Unscheduled Visitor** | Flying | Long Beam: about 1s of charging (aim with Up/Down) while its plates, wings and many eyes spread open, then one red beam down the street that wrecks every window, vehicle and soldier on its line | A silent, many-eyed geometric guest. Glass cannon: hits hard with a long-reach needle jab, but takes 40% extra damage. Never climbs. |
+| **Act of God** | Flying | Smite: a volley of 6 lightning strikes rains down across the block, wrecking everything on the strike lines and briefly stunning the army | A grumpy thundercloud with long reach. Slow but sturdy. Overcast: takes a little less damage. |
+| **Unscheduled Visitor** | Flying | Long Beam: about 1s of charging (aim with Up/Down) while its plates, wings and many eyes spread open, then one red beam down the street that wrecks every window, vehicle and soldier on its line | A silent, many-eyed geometric guest. Glass cannon: hits hard with a long-reach needle jab, but has thin health; its beam patches it up a little. Never climbs. |
 | **Elder Statesman** | Climbing | Filibuster: plants himself for a second while a wave of red tape and paperwork stuns the army and window snipers for 3s and heals him | Incumbency: each snack stacks +8% punch damage and 2% less damage taken (max 5, fades over time). Slow, sturdy, wide grabby swipes. |
 | **Gizzard** | Climbing | Blood Howl: a short howl with red shockwave rings, then a 5s frenzy (+32% speed, +50% damage, much faster punching) while the crowd panics | The BIG DEAD Dog, a hunched grey werewolf. Highest jump in the roster, so it's great at the Roof Slam. Scavenger: every snack heals a little extra. |
-| **Automated Solution** | Climbing | Target Lock: the eye paints up to 6 targets, then homing micro-missiles hit every one | A slow, relentless robot spider tank. Armoured chassis: takes 30% less damage and slowly self-repairs. Highest health in the roster, low jump, slow stabbing punch. |
+| **Automated Solution** | Climbing | Target Lock: the eye paints up to 6 targets, then homing micro-missiles hit every one | A slow, relentless robot spider. Armoured chassis: slowly self-repairs. Low jump, slow but heavy stabbing punch. |
 | **Gat Stanley** | Flattens | Gat Rampage: rooted for a moment, he sprays a sweeping tommy-gun arc across the block | A mailed-around paper boy with a tommy gun. His punch is a short burst that breaks windows and drops soldiers from range, but bullets can't eat: up close, the same button grabs snacks by hand. Turns edge-on like paper (shots slip past mid-turn), flutters when he falls (hold Jump). Return to Sender: some shots bounce back at the shooter. |
 
 ## Project layout

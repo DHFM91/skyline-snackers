@@ -75,7 +75,10 @@ class Monster {
     else if (this.s.flies) this.updateFly(dt, game, L, R, U, D);
     else this.updateWalk(dt, game, L, R, U, D, J, Jhit, Dhit);
     if (C && Input.hit('punch') && this.punchCd <= 0 && this.dashT <= 0) this.punch(game, U, D);
-    if (C && Input.hit('special') && this.specialCd <= 0 && this.def.special) { this.def.special(this, game); this.specialCd = this.s.specialCd; }
+    if (C && Input.hit('special') && this.specialCd <= 0 && this.def.special) {
+      this.def.special(this, game); this.specialCd = this.s.specialCd;
+      if (this.def.specialHeal) this.hp = Math.min(this.s.maxHp, this.hp + this.def.specialHeal);   // balance: some specials also heal
+    }
     this.x = clamp(this.x, 16, W - 16);
     if (this.hp <= 0 && game.state === 'play') this.defeat(game);
   }
@@ -314,6 +317,7 @@ registerMonster({
   move: 'CLIMBS', specialName: 'MADNESS ROAR', specialDesc: 'Stuns the army, faints the crowd',
   passive: 'Hold JUMP mid-air to glide',
   bars: { STR: 5, SPD: 2, REACH: 2, TOUGH: 5 },
+  specialHeal: 15,
   stats: { w: 46, h: 88, speed: 118, climb: 82, jump: 660, dmg: 2, reach: 30, hitR: 20, punchCd: 0.34,
     maxHp: 120, armor: 0.85, armY: 0.62, glide: true, specialCd: 9 },
   portraitY: 0.8,
@@ -392,8 +396,9 @@ registerMonster({
   move: 'CLIMBS', specialName: 'BLINK', specialDesc: 'Short-range teleport, briefly untouchable',
   passive: 'Longest reach in the roster',
   bars: { STR: 3, SPD: 4, REACH: 5, TOUGH: 3 },
-  stats: { w: 30, h: 124, speed: 150, climb: 112, jump: 600, dmg: 1.5, reach: 72, hitR: 16, punchCd: 0.28,
-    maxHp: 100, armor: 1, armY: 0.62, specialCd: 2.2 },
+  specialHeal: 10,
+  stats: { w: 30, h: 124, speed: 150, climb: 112, jump: 600, dmg: 1.9, reach: 72, hitR: 16, punchCd: 0.28,
+    maxHp: 165, armor: 0.8, armY: 0.62, specialCd: 2.2 },
   portraitY: 0.92,
   special(m, game) {
     const from = { x: m.x, y: m.y - m.h / 2 };
@@ -470,7 +475,7 @@ registerMonster({
   passive: 'Free flight, never needs to climb',
   bars: { STR: 3, SPD: 5, REACH: 1, TOUGH: 2 },
   stats: { w: 52, h: 58, speed: 210, climb: 0, jump: 0, dmg: 1.25, reach: 26, hitR: 22, punchCd: 0.22,
-    maxHp: 90, armor: 1.15, armY: 0.5, flies: true, specialCd: 3.5 },
+    maxHp: 140, armor: 1.0, armY: 0.5, flies: true, specialCd: 3.5 },
   portraitY: 0.55,
   special(m, game) {
     let dx = (Input.held('right') ? 1 : 0) - (Input.held('left') ? 1 : 0);
@@ -540,7 +545,7 @@ registerMonster({
   passive: 'Hard shell: takes 10% less damage',
   bars: { STR: 4, SPD: 2, REACH: 2, TOUGH: 4 },
   stats: { w: 60, h: 88, speed: 115, climb: 84, jump: 600, dmg: 2, reach: 30, hitR: 24, punchCd: 0.32,
-    maxHp: 120, armor: 0.9, armY: 0.6, specialCd: 6 },
+    maxHp: 130, armor: 0.9, armY: 0.6, specialCd: 6 },
   portraitY: 0.7,
   special(m, game) {
     const f = m.facing, mx = m.x + f * (m.w * 0.5 + 6), my = m.y - m.h * 0.5;
@@ -674,10 +679,10 @@ registerMonster({
   id: 'actofgod', name: 'ACT OF GOD', tagline: 'Not covered. Not even a little.',
   homage: "Every insurance policy's fine print",
   move: 'FLIES', specialName: 'SMITE', specialDesc: 'A volley of lightning strikes rains down across the block',
-  passive: 'Overcast: soft and puffy, takes 15% less damage',
+  passive: 'Overcast: soft and puffy, takes a little less damage',
   bars: { STR: 2, SPD: 2, REACH: 5, TOUGH: 4 },
-  stats: { w: 74, h: 56, speed: 135, climb: 0, jump: 0, dmg: 1.25, reach: 64, hitR: 16, punchCd: 0.42, maxHp: 130,
-    armor: 0.85, armY: 0.5, flies: true, specialCd: 7 },
+  stats: { w: 74, h: 56, speed: 135, climb: 0, jump: 0, dmg: 1.25, reach: 64, hitR: 16, punchCd: 0.42, maxHp: 120,
+    armor: 0.92, armY: 0.5, flies: true, specialCd: 7 },
   portraitY: 0.5,
   special(m, game) {
     const n = 6, span = 150;
@@ -791,8 +796,9 @@ registerMonster({
   move: 'FLIES', specialName: 'LONG BEAM', specialDesc: 'Slow charge, then one red beam across the whole street',
   passive: 'Glass jaw: hits like a truck, breaks like a vase',
   bars: { STR: 5, SPD: 3, REACH: 4, TOUGH: 1 },
-  stats: { w: 40, h: 60, speed: 150, climb: 0, jump: 0, dmg: 2.2, reach: 64, hitR: 12, punchCd: 0.8, maxHp: 70,
-    armor: 1.4, armY: 0.5, flies: true, specialCd: 8 },
+  specialHeal: 30,
+  stats: { w: 40, h: 60, speed: 150, climb: 0, jump: 0, dmg: 2.2, reach: 64, hitR: 12, punchCd: 0.55, maxHp: 140,
+    armor: 1.0, armY: 0.5, flies: true, specialCd: 8 },
   portraitY: 0.5,
   special(m, game) {
     if (m.beam) return;
@@ -1022,8 +1028,9 @@ registerMonster({
   move: 'CLIMBS', specialName: 'FILIBUSTER', specialDesc: 'Talks forever: red tape stuns the army, and he heals',
   passive: 'Incumbency: each snack makes him hit harder (stacks, fades)',
   bars: { STR: 3, SPD: 2, REACH: 3, TOUGH: 4 },
+  specialHeal: 15,
   stats: { w: 46, h: 90, speed: 100, climb: 76, jump: 560, dmg: 1.75, reach: 40, hitR: 24, punchCd: 0.4,
-    maxHp: 125, armor: 0.92, armY: 0.58, specialCd: 8 },
+    maxHp: 150, armor: 0.92, armY: 0.58, specialCd: 8 },
   portraitY: 1.0,
   tick(m, dt, game) {
     const base = m.def.stats;
