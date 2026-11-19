@@ -162,13 +162,16 @@
     return false;
   }
 
-  // Is there something to eat within arm's reach? Returns the punch direction that reaches it.
+  // Is anything edible within arm's reach? (a person on the street, or someone in a window, even
+  // behind unbroken glass: a punch breaks it open, the next one eats). Returns the punch direction.
   function nearbySnack(m, game, dir) {
-    const dirs = m.state === 'climb' ? [dir] : [dir, 'down'];
+    const dirs = m.state === 'climb' ? [dir, 'side', 'up'] : [dir, 'down', 'side'];
     for (const d of dirs) {
-      const p = m.hitPoints(d)[0], r = m.s.hitR + 10;
-      for (const wk of game.walkers) if (!wk.dead && circleRect(p.x, p.y, r, wk.box())) return d;
-      for (const bd of game.buildings) { const hc = bd.cellAt(p.x, p.y); if (hc && hc.cell.hp > 0 && hc.cell.hp <= 1 && hc.cell.occ) return d; }
+      const r = m.s.hitR + 10;
+      for (const p of m.hitPoints(d)) {
+        for (const wk of game.walkers) if (!wk.dead && circleRect(p.x, p.y, r, wk.box())) return d;
+        for (const bd of game.buildings) { const hc = bd.cellAt(p.x, p.y); if (hc && hc.cell.hp > 0 && hc.cell.occ) return d; }
+      }
     }
     return null;
   }
@@ -186,7 +189,7 @@
     punch(m, game, dir) {
       // up close to a snack: grab it by hand. Otherwise: a short burst.
       const reach = nearbySnack(m, game, dir);
-      if (reach) { m.punchDir = reach; game.resolveHit(m, m.hitPoints(reach), m.s.hitR + 6, m.s.dmg, null); return; }
+      if (reach) { m.punchDir = reach; m.hitPoints(reach); game.resolveHit(m, m.hitPoints(reach), m.s.hitR + 6, m.s.dmg, null); return; }
       if (!m.stan) return;
       m.hitPoints(dir);   // updates the pose's hand point
       const aim = dir === 'up' ? -0.32 : dir === 'down' ? 0.26 : 0;
