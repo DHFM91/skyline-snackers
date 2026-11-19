@@ -265,7 +265,8 @@
       const k = p.glide ? 4 : 0;
       f1 = [-12 - k, -9 + (p.glide ? -6 : 0)]; f2 = [8 - k, -13 + (p.glide ? -4 : 0)];
     } else if (p.walk) {
-      f1 = [4 + sw * 11, -Math.max(0, -cw) * 8]; f2 = [4 - sw * 11, -Math.max(0, cw) * 8];
+      // a foot lifts while it swings forward and stays planted while it pushes back (no moonwalk)
+      f1 = [4 + sw * 11, -Math.max(0, cw) * 8]; f2 = [4 - sw * 11, -Math.max(0, -cw) * 8];
     } else { f1 = [-4, 0]; f2 = [10, 0]; }
     const hipB = [-5, -33], hipF = [5, -33];
     leg(ctx, hipB[0], hipB[1], f1[0], f1[1], true, 0);
