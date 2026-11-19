@@ -2,6 +2,14 @@
 
 Loose ideas and planned work. Newest at the bottom.
 
+## Standing rule: the roster screen
+
+- Keep the monster tiles on "Choose your monster" at their current size (as of 10 monsters).
+- New monsters join the existing rows in a balanced way: if one new monster makes the rows uneven
+  (e.g. 6 + 5), the next one evens them out again (6 + 6).
+- The current code already does this up to 24 monsters (two rows of up to 12 at this tile size).
+  Past that, add a third row at the same tile size rather than shrinking the tiles.
+
 ## Online 3-player co-op
 
 The original Rampage has 3 players on screen at once. Skyline Snackers needs a whole keyboard
